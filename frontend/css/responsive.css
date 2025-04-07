@@ -1,0 +1,279 @@
+/* Styles responsives */
+
+/* Très petits appareils (téléphones, moins de 576px) */
+@media (max-width: 575.98px) {
+    /* Général */
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    /* Header */
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    /* Bannière principale */
+    .hero-banner {
+        text-align: center;
+    }
+    
+    .hero-banner img {
+        margin-top: 1.5rem;
+    }
+    
+    /* Produits */
+    .product-card {
+        margin-bottom: 1rem;
+    }
+    
+    /* Détail produit */
+    .product-thumbnails .col-3 {
+        width: 25%;
+    }
+    
+    /* Panier */
+    .cart-item {
+        text-align: center;
+    }
+    
+    .cart-item .col-4 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .remove-item {
+        margin-top: 0.5rem;
+    }
+    
+    /* Formulaires */
+    .social-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    /* Commande */
+    .checkout-steps .step-text {
+        font-size: 10px;
+    }
+    
+    /* Admin */
+    .sidebar {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        width: 250px;
+        height: 100vh;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+}
+
+/* Petits appareils (paysage téléphones, 576px et plus) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    /* Header */
+    .navbar-brand {
+        font-size: 1.3rem;
+    }
+    
+    /* Produits */
+    .product-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Admin */
+    .sidebar {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        width: 250px;
+        height: 100vh;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+}
+
+/* Appareils moyens (tablettes, 768px et plus) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    /* Bannière principale */
+    .hero-banner {
+        padding: 2rem 0;
+    }
+    
+    /* Filtres */
+    .color-btn, .color-option {
+        width: 25px;
+        height: 25px;
+    }
+    
+    /* Commande */
+    .checkout-steps .step-text {
+        font-size: 12px;
+    }
+}
+
+/* Grands appareils (desktops, 992px et plus) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    /* Grille de produits */
+    .products-grid .col-lg-4 {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Très grands appareils (grands desktops, 1200px et plus) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1200px;
+    }
+}
+
+/* Pour tous les mobiles en orientation portrait */
+@media (max-width: 767.98px) and (orientation: portrait) {
+    /* Grille de produits */
+    .products-grid .col-6 {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    
+    .product-card .card-body {
+        padding: 0.75rem;
+    }
+    
+    .product-card h5 {
+        font-size: 1rem;
+    }
+    
+    /* Panier */
+    .cart-item .item-total {
+        font-size: 0.9rem;
+    }
+    
+    /* Commande */
+    .checkout-steps .step-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Optimisations spécifiques pour les fonctionnalités */
+
+/* Navigation mobile */
+@media (max-width: 991.98px) {
+    .navbar-nav {
+        margin-bottom: 1rem;
+    }
+    
+    .navbar .d-flex {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+    
+    .navbar .btn {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Panier responsive */
+@media (max-width: 767.98px) {
+    .cart-item {
+        padding: 1rem 0;
+    }
+    
+    .cart-item .row {
+        flex-direction: column;
+    }
+    
+    .cart-item .col-md-2, 
+    .cart-item .col-md-4 {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+    
+    .cart-item .product-title {
+        font-size: 1.1rem;
+    }
+    
+    .item-qty {
+        width: 40px;
+    }
+    
+    .item-total {
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Détail produit responsive */
+@media (max-width: 767.98px) {
+    .product-info {
+        margin-top: 1.5rem;
+    }
+    
+    .product-images {
+        text-align: center;
+    }
+    
+    #product-colors {
+        justify-content: center;
+    }
+    
+    #product-sizes {
+        justify-content: center;
+    }
+}
+
+/* Timeline responsive */
+@media (max-width: 575.98px) {
+    .timeline {
+        padding-left: 25px;
+    }
+    
+    .timeline::before {
+        left: 8px;
+    }
+    
+    .timeline-item::before {
+        left: -25px;
+        width: 16px;
+        height: 16px;
+    }
+}
+
+/* Admin responsive */
+@media (max-width: 991.98px) {
+    .sidebar-toggle {
+        display: block;
+    }
+    
+    main {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+}
