@@ -17,52 +17,7 @@
   </head>
   <body>
     <!-- Header avec navigation -->
-    <header>
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-          <a class="navbar-brand" href="index.html">StyleShop</a>
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-              <li class="nav-item">
-                <a class="nav-link" href="index.html">Accueil</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="produits.html">Produits</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="suivi-commande.html"
-                  >Suivi Commandes</a
-                >
-              </li>
-            </ul>
-            <div class="d-flex">
-              <a href="panier.html" class="btn btn-outline-dark me-2">
-                <i class="bi bi-cart"></i> Panier
-                <span
-                  id="cart-count"
-                  class="badge bg-dark text-white ms-1 rounded-pill"
-                  >0</span
-                >
-              </a>
-              <a href="connexion.html" class="btn btn-outline-dark me-2"
-                >Connexion</a
-              >
-              <a href="inscription.html" class="btn btn-dark active"
-                >Inscription</a
-              >
-            </div>
-          </div>
-        </div>
-      </nav>
-    </header>
+    {% include "header.html" %}
 
     <!-- Section d'inscription -->
     <section class="register-section py-5">
@@ -73,215 +28,111 @@
               <div class="card-body p-5">
                 <h2 class="text-center mb-4">Créer un compte</h2>
 
-                <form id="register-form">
-                  <!-- Alerte d'erreur (affichée via JS) -->
+                <form id="register-form" action="{{ url_for('inscription') }}" method="post">
+                  <!-- Alerte d'erreur -->
                   <div class="alert alert-danger d-none" id="register-error">
                     Une erreur s'est produite. Veuillez réessayer.
                   </div>
-
+                
                   <div class="row">
-                    <!-- Prénom -->
                     <div class="col-md-6 mb-3">
                       <label for="first-name" class="form-label">Prénom</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="first-name"
-                        required
-                      />
+                      <input type="text" class="form-control" id="first-name" name="first-name" required />
                     </div>
-
-                    <!-- Nom -->
                     <div class="col-md-6 mb-3">
                       <label for="last-name" class="form-label">Nom</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="last-name"
-                        required
-                      />
+                      <input type="text" class="form-control" id="last-name" name="last-name" required />
                     </div>
                   </div>
-
-                  <!-- Email -->
+                
                   <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
-                    <input
-                      type="email"
-                      class="form-control"
-                      id="email"
-                      required
-                    />
+                    <input type="email" class="form-control" id="email" name="email" required />
                   </div>
-
-                  <!-- Mot de passe -->
+                
                   <div class="mb-3">
-                    <label for="password" class="form-label"
-                      >Mot de passe</label
-                    >
+                    <label for="password" class="form-label">Mot de passe</label>
                     <div class="input-group">
-                      <input
-                        type="password"
-                        class="form-control"
-                        id="password"
-                        required
-                      />
-                      <button
-                        class="btn btn-outline-secondary toggle-password"
-                        type="button"
-                      >
+                      <input type="password" class="form-control" id="password" name="password" required />
+                      <button class="btn btn-outline-secondary toggle-password" type="button">
                         <i class="bi bi-eye"></i>
                       </button>
                     </div>
                     <div class="form-text" id="password-strength">
-                      Le mot de passe doit contenir au moins 8 caractères, dont
-                      une majuscule, un chiffre et un caractère spécial.
+                      Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, un chiffre et un caractère spécial.
                     </div>
                   </div>
-
-                  <!-- Confirmer mot de passe -->
+                
                   <div class="mb-3">
-                    <label for="confirm-password" class="form-label"
-                      >Confirmer le mot de passe</label
-                    >
+                    <label for="confirm-password" class="form-label">Confirmer le mot de passe</label>
                     <div class="input-group">
-                      <input
-                        type="password"
-                        class="form-control"
-                        id="confirm-password"
-                        required
-                      />
-                      <button
-                        class="btn btn-outline-secondary toggle-password"
-                        type="button"
-                      >
+                      <input type="password" class="form-control" id="confirm-password" name="confirm-password" required />
+                      <button class="btn btn-outline-secondary toggle-password" type="button">
                         <i class="bi bi-eye"></i>
                       </button>
                     </div>
                   </div>
-
-                  <!-- Adresse -->
+                
                   <div class="mb-3">
                     <label for="address" class="form-label">Adresse</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="address"
-                      required
-                    />
+                    <input type="text" class="form-control" id="address" name="address" required />
                   </div>
-
+                
                   <div class="row">
-                    <!-- Code postal -->
                     <div class="col-md-4 mb-3">
-                      <label for="postal-code" class="form-label"
-                        >Code postal</label
-                      >
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="postal-code"
-                        required
-                      />
+                      <label for="postal-code" class="form-label">Code postal</label>
+                      <input type="text" class="form-control" id="postal-code" name="postal-code" required />
                     </div>
-
-                    <!-- Ville -->
                     <div class="col-md-8 mb-3">
                       <label for="city" class="form-label">Ville</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="city"
-                        required
-                      />
+                      <input type="text" class="form-control" id="city" name="city" required />
                     </div>
                   </div>
-
-                  <!-- Téléphone -->
+                
                   <div class="mb-3">
                     <label for="phone" class="form-label">Téléphone</label>
-                    <input
-                      type="tel"
-                      class="form-control"
-                      id="phone"
-                      required
-                    />
+                    <input type="tel" class="form-control" id="phone" name="phone" required />
                   </div>
-
-                  <!-- Conditions générales -->
+                
                   <div class="mb-3 form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="terms"
-                      required
-                    />
+                    <input type="checkbox" class="form-check-input" id="terms" name="terms" required />
                     <label class="form-check-label" for="terms">
-                      J'accepte les
-                      <a
-                        href="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#termsModal"
-                        >conditions générales</a
-                      >
+                      J'accepte les <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">conditions générales</a>
                     </label>
                   </div>
-
-                  <!-- Newsletter -->
+                
                   <div class="mb-4 form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="newsletter"
-                    />
+                    <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter" />
                     <label class="form-check-label" for="newsletter">
-                      Je souhaite recevoir la newsletter et les offres
-                      promotionnelles
+                      Je souhaite recevoir la newsletter et les offres promotionnelles
                     </label>
                   </div>
-
-                  <!-- Bouton d'inscription -->
+                
                   <div class="d-grid mb-4">
-                    <button type="submit" class="btn btn-primary">
-                      Créer mon compte
-                    </button>
+                    <button type="submit" class="btn btn-primary">Créer mon compte</button>
                   </div>
-
-                  <!-- Séparateur -->
+                
                   <div class="separator mb-4">
                     <span>ou inscrivez-vous avec</span>
                   </div>
-
-                  <!-- Inscription avec réseaux sociaux -->
+                
                   <div class="d-flex justify-content-center gap-3 mb-4">
-                    <button
-                      type="button"
-                      class="btn btn-outline-primary social-btn"
-                    >
+                    <button type="button" class="btn btn-outline-primary social-btn">
                       <i class="bi bi-facebook"></i>
                     </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-danger social-btn"
-                    >
+                    <button type="button" class="btn btn-outline-danger social-btn">
                       <i class="bi bi-google"></i>
                     </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-dark social-btn"
-                    >
+                    <button type="button" class="btn btn-outline-dark social-btn">
                       <i class="bi bi-apple"></i>
                     </button>
                   </div>
-
-                  <!-- Lien vers connexion -->
+                
                   <div class="text-center">
-                    <p class="mb-0">
-                      Déjà un compte ?
-                      <a href="connexion.html">Connectez-vous</a>
-                    </p>
+                    <p class="mb-0">Déjà un compte ? <a href="connexion.html">Connectez-vous</a></p>
                   </div>
                 </form>
+                
               </div>
             </div>
           </div>
@@ -426,41 +277,7 @@
     ></div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-4 mt-5">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-4">
-            <h5>StyleShop</h5>
-            <p>
-              Votre destination mode préférée pour des vêtements de qualité à
-              prix abordables.
-            </p>
-          </div>
-          <div class="col-md-4">
-            <h5>Liens Utiles</h5>
-            <ul class="list-unstyled">
-              <li><a href="#" class="text-white">À propos de nous</a></li>
-              <li><a href="#" class="text-white">Conditions générales</a></li>
-              <li>
-                <a href="#" class="text-white">Politique de confidentialité</a>
-              </li>
-              <li><a href="#" class="text-white">FAQ</a></li>
-            </ul>
-          </div>
-          <div class="col-md-4">
-            <h5>Contact</h5>
-            <address>
-              <p>123 Rue de la Mode<br />75000 Paris, France</p>
-              <p>Email: contact@styleshop.fr<br />Tél: +33 1 23 45 67 89</p>
-            </address>
-          </div>
-        </div>
-        <hr />
-        <div class="text-center">
-          <p>&copy; 2025 StyleShop. Tous droits réservés.</p>
-        </div>
-      </div>
-    </footer>
+    {% include "footer.html" %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

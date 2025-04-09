@@ -1,0 +1,32 @@
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">StyleShop</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('produits') }}">Produits</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Suivi Commandes</a>
+            </li>
+          </ul>
+          <div class="d-flex">
+            <a href="{{url_for('panier')}}" class="btn btn-outline-dark me-2">
+              <i class="bi bi-cart"></i> Panier
+              <span id="cart-count" class="badge bg-dark text-white ms-1 rounded-pill">0</span>
+            </a>
+            <a href="{{ url_for('connexion') }}" class="btn btn-outline-dark me-2">Connexion</a>
+            <a href="{{ url_for('inscription') }}" class="btn btn-dark">Inscription</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+  
