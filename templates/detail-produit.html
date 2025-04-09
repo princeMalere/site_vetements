@@ -4,58 +4,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Détail du Produit - StyleShop</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
-    />
-    <link rel="stylesheet" href="../static/style.css">
-    <link rel="stylesheet" href="../static/responsive.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
   </head>
   <body>
     <!-- Header avec navigation -->
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-          <a class="navbar-brand" href="index.html">StyleShop</a>
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-          >
+          <a class="navbar-brand" href="{{ url_for('index') }}">StyleShop</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
               <li class="nav-item">
-                <a class="nav-link" href="index.html">Accueil</a>
+                <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="produits.html">Produits</a>
+                <a class="nav-link" href="{{ url_for('produits') }}">Produits</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="suivi-commande.html"
-                  >Suivi Commandes</a
-                >
+                <a class="nav-link" href="#">Suivi Commandes</a>
               </li>
             </ul>
             <div class="d-flex">
-              <a href="panier.html" class="btn btn-outline-dark me-2">
+              <a href="#" class="btn btn-outline-dark me-2">
                 <i class="bi bi-cart"></i> Panier
-                <span
-                  id="cart-count"
-                  class="badge bg-dark text-white ms-1 rounded-pill"
-                  >0</span
-                >
+                <span id="cart-count" class="badge bg-dark text-white ms-1 rounded-pill">0</span>
               </a>
-              <a href="connexion.html" class="btn btn-outline-dark me-2"
-                >Connexion</a
-              >
-              <a href="inscription.html" class="btn btn-dark">Inscription</a>
+              <a href="#" class="btn btn-outline-dark me-2">Connexion</a>
+              <a href="#" class="btn btn-dark">Inscription</a>
             </div>
           </div>
         </div>
@@ -66,638 +47,166 @@
     <div class="container py-3">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.html">Accueil</a></li>
-          <li class="breadcrumb-item"><a href="produits.html">Produits</a></li>
-          <li
-            class="breadcrumb-item active"
-            aria-current="page"
-            id="product-name"
-          >
-            Détail du produit
-          </li>
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('produits') }}">Produits</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ product.nom }}</li>
         </ol>
       </nav>
     </div>
 
-    <!-- Section détail du produit -->
+    <!-- Section Détail du Produit -->
     <section class="product-detail py-4">
       <div class="container">
         <div class="row" id="product-detail-container">
-          <!-- Contenu chargé dynamiquement avec JavaScript -->
+          <!-- Image du produit -->
           <div class="col-md-6">
             <div class="product-images">
-              <img
-                id="main-product-image"
-                src="https://picsum.photos/id/1005/600/600"
-                alt="Produit"
-                class="img-fluid mb-3 rounded"
-              />
-              <div class="row g-2" id="product-thumbnails">
-                <div class="col-3">
-                  <img
-                    src="https://picsum.photos/id/1005/150/150"
-                    class="img-thumbnail product-thumbnail active"
-                    alt="Thumbnail 1"
-                  />
-                </div>
-                <div class="col-3">
-                  <img
-                    src="https://picsum.photos/id/1005/150/150"
-                    class="img-thumbnail product-thumbnail"
-                    alt="Thumbnail 2"
-                  />
-                </div>
-                <div class="col-3">
-                  <img
-                    src="https://picsum.photos/id/1005/150/150"
-                    class="img-thumbnail product-thumbnail"
-                    alt="Thumbnail 3"
-                  />
-                </div>
-                <div class="col-3">
-                  <img
-                    src="https://picsum.photos/id/1005/150/150"
-                    class="img-thumbnail product-thumbnail"
-                    alt="Thumbnail 4"
-                  />
-                </div>
-              </div>
+              <img id="main-product-image" src="{{ product.image_url }}" alt="{{ product.nom }}" class="img-fluid mb-3 rounded" />
+              <!-- Miniatures éventuelles (statique ou non) peuvent rester ici -->
             </div>
           </div>
+          <!-- Informations essentielles -->
           <div class="col-md-6">
             <div class="product-info">
-              <h1 id="product-title">Chemise à carreaux</h1>
+              <h1 id="product-title">{{ product.nom }}</h1>
               <div class="mb-3">
                 <div class="d-flex align-items-center">
                   <div class="ratings me-2">
-                    <i class="bi bi-star-fill text-warning"></i>
-                    <i class="bi bi-star-fill text-warning"></i>
-                    <i class="bi bi-star-fill text-warning"></i>
-                    <i class="bi bi-star-fill text-warning"></i>
-                    <i class="bi bi-star-half text-warning"></i>
+                    {% for i in range(1, 6) %}
+                      {% if i <= product.note_moyenne|round(0, 'floor') %}
+                        <i class="bi bi-star-fill text-warning"></i>
+                      {% else %}
+                        <i class="bi bi-star text-warning"></i>
+                      {% endif %}
+                    {% endfor %}
                   </div>
-                  <span id="product-rating">4.5</span>
-                  <span class="text-muted ms-2">(24 avis)</span>
+                  <span id="product-rating">{{ product.note_moyenne }}</span>
+                  <span class="text-muted ms-2">({{ reviews|length }} avis)</span>
                 </div>
               </div>
               <div class="mb-3">
-                <h3 id="product-price" class="fw-bold">39,99 €</h3>
+                <!-- Prix affiché en dollars -->
+                <h3 id="product-price" class="fw-bold">${{ product.prix }}</h3>
               </div>
-              <p id="product-description" class="mb-4">
-                Une chemise à carreaux élégante et confortable, parfaite pour
-                toutes les occasions. Fabriquée en coton de haute qualité pour
-                un confort optimal toute la journée.
-              </p>
-
-              <div class="mb-3">
-                <h5>Couleur:</h5>
-                <div class="d-flex" id="product-colors">
-                  <div
-                    class="color-option me-2 active"
-                    style="background-color: blue"
-                    data-color="blue"
-                  ></div>
-                  <div
-                    class="color-option me-2"
-                    style="background-color: red"
-                    data-color="red"
-                  ></div>
-                  <div
-                    class="color-option me-2"
-                    style="background-color: green"
-                    data-color="green"
-                  ></div>
-                  <div
-                    class="color-option me-2"
-                    style="background-color: black"
-                    data-color="black"
-                  ></div>
-                </div>
-              </div>
-
-              <div class="mb-4">
-                <h5>Taille:</h5>
-                <div class="btn-group" role="group" id="product-sizes">
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="size"
-                    id="size-xs"
-                    autocomplete="off"
-                    value="XS"
-                  />
-                  <label class="btn btn-outline-dark" for="size-xs">XS</label>
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="size"
-                    id="size-s"
-                    autocomplete="off"
-                    value="S"
-                  />
-                  <label class="btn btn-outline-dark" for="size-s">S</label>
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="size"
-                    id="size-m"
-                    autocomplete="off"
-                    value="M"
-                    checked
-                  />
-                  <label class="btn btn-outline-dark" for="size-m">M</label>
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="size"
-                    id="size-l"
-                    autocomplete="off"
-                    value="L"
-                  />
-                  <label class="btn btn-outline-dark" for="size-l">L</label>
-
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="size"
-                    id="size-xl"
-                    autocomplete="off"
-                    value="XL"
-                  />
-                  <label class="btn btn-outline-dark" for="size-xl">XL</label>
-                </div>
-              </div>
-
-              <div class="d-flex align-items-center mb-4">
-                <div class="input-group me-3" style="width: 130px">
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    id="decrease-quantity"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="text"
-                    class="form-control text-center"
-                    value="1"
-                    id="product-quantity"
-                  />
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    id="increase-quantity"
-                  >
-                    +
-                  </button>
-                </div>
-                <button
-                  id="add-to-cart"
-                  class="btn btn-primary btn-lg flex-grow-1"
-                >
-                  <i class="bi bi-cart-plus"></i> Ajouter au panier
-                </button>
-              </div>
-
+              <p id="product-description" class="mb-4">{{ product.description }}</p>
               <div class="product-meta">
+                <p><strong>Catégorie:</strong> {{ product.categorie }}</p>
                 <p>
                   <strong>Disponibilité:</strong>
-                  <span id="product-availability" class="text-success"
-                    >En stock</span
-                  >
-                </p>
-                <p>
-                  <strong>Référence:</strong>
-                  <span id="product-sku">CH-2023-001</span>
-                </p>
-                <p>
-                  <strong>Catégorie:</strong>
-                  <a href="produits.html?categorie=hommes" id="product-category"
-                    >Hommes</a
-                  >
+                  {% if product.stock > 0 %}
+                    En stock ({{ product.stock }})
+                  {% else %}
+                    Indisponible
+                  {% endif %}
                 </p>
               </div>
+              <a href="#" id="add-to-cart" class="btn btn-primary btn-lg">Ajouter au panier</a>
             </div>
           </div>
         </div>
 
-        <!-- Informations supplémentaires -->
+        <!-- Onglets pour Description, Spécifications et Avis -->
         <div class="row mt-5">
           <div class="col-12">
             <ul class="nav nav-tabs" id="productTabs" role="tablist">
+              <!-- Onglet Description -->
               <li class="nav-item" role="presentation">
-                <button
-                  class="nav-link active"
-                  id="description-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#description"
-                  type="button"
-                  role="tab"
-                  aria-controls="description"
-                  aria-selected="true"
-                >
+                <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
                   Description
                 </button>
               </li>
+              <!-- Onglet Spécifications : affichage simplifié avec les infos issues du produit -->
               <li class="nav-item" role="presentation">
-                <button
-                  class="nav-link"
-                  id="specifications-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#specifications"
-                  type="button"
-                  role="tab"
-                  aria-controls="specifications"
-                  aria-selected="false"
-                >
-                  Caractéristiques
+                <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab" aria-controls="specifications" aria-selected="false">
+                  Spécifications
                 </button>
               </li>
+              <!-- Onglet Avis -->
               <li class="nav-item" role="presentation">
-                <button
-                  class="nav-link"
-                  id="reviews-tab"
-                  data-bs-toggle="tab"
-                  data-bs-target="#reviews"
-                  type="button"
-                  role="tab"
-                  aria-controls="reviews"
-                  aria-selected="false"
-                >
-                  Avis (24)
+                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">
+                  Avis ({{ reviews|length }})
                 </button>
               </li>
             </ul>
-            <div
-              class="tab-content p-4 border border-top-0 rounded-bottom"
-              id="productTabsContent"
-            >
-              <div
-                class="tab-pane fade show active"
-                id="description"
-                role="tabpanel"
-                aria-labelledby="description-tab"
-              >
+            <div class="tab-content p-4 border border-top-0 rounded-bottom" id="productTabsContent">
+              <!-- Contenu de l'onglet Description -->
+              <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
                 <h4>Description détaillée</h4>
-                <p>
-                  Cette chemise à carreaux combine style et confort pour une
-                  tenue polyvalente que vous pouvez porter en toute occasion.
-                  Conçue avec un tissu en coton respirant de haute qualité, elle
-                  offre une sensation agréable sur la peau tout au long de la
-                  journée.
-                </p>
-                <p>
-                  Les carreaux classiques et la coupe moderne en font un élément
-                  essentiel de votre garde-robe. Portez-la avec un jean pour un
-                  look décontracté ou avec un pantalon chino pour un style plus
-                  habillé.
-                </p>
-                <h5>Caractéristiques principales:</h5>
-                <ul>
-                  <li>100% coton de qualité supérieure</li>
-                  <li>Tissu respirant et durable</li>
-                  <li>Motif à carreaux classique</li>
-                  <li>Boutons résistants</li>
-                  <li>Poche poitrine</li>
-                  <li>Lavable en machine</li>
-                </ul>
+                <p>{{ product.description }}</p>
               </div>
-              <div
-                class="tab-pane fade"
-                id="specifications"
-                role="tabpanel"
-                aria-labelledby="specifications-tab"
-              >
-                <h4>Caractéristiques techniques</h4>
-                <table class="table table-striped">
-                  <tbody>
-                    <tr>
-                      <th scope="row">Matière</th>
-                      <td>100% Coton</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Type de col</th>
-                      <td>Col classique</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Type de manches</th>
-                      <td>Manches longues avec boutons</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Fermeture</th>
-                      <td>Boutonnière classique</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Entretien</th>
-                      <td>Lavable en machine à 30°C</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Origine</th>
-                      <td>Fabriqué en Europe</td>
-                    </tr>
-                  </tbody>
-                </table>
-                <h5>Guide des tailles</h5>
+              <!-- Contenu de l'onglet Spécifications (affiche les infos disponibles dans la table Produits) -->
+              <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
+                <h4>Spécifications</h4>
                 <table class="table table-bordered">
-                  <thead>
+                  <tbody>
                     <tr>
                       <th>Taille</th>
-                      <th>Tour de poitrine (cm)</th>
-                      <th>Tour de taille (cm)</th>
-                      <th>Longueur (cm)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>XS</td>
-                      <td>86-91</td>
-                      <td>71-76</td>
-                      <td>69</td>
+                      <td>{{ product.taille }}</td>
                     </tr>
                     <tr>
-                      <td>S</td>
-                      <td>91-97</td>
-                      <td>76-81</td>
-                      <td>71</td>
+                      <th>Couleur</th>
+                      <td>{{ product.couleur }}</td>
                     </tr>
                     <tr>
-                      <td>M</td>
-                      <td>97-102</td>
-                      <td>81-86</td>
-                      <td>73</td>
+                      <th>Matière</th>
+                      <td>{{ product.matiere }}</td>
                     </tr>
                     <tr>
-                      <td>L</td>
-                      <td>102-107</td>
-                      <td>86-91</td>
-                      <td>75</td>
-                    </tr>
-                    <tr>
-                      <td>XL</td>
-                      <td>107-112</td>
-                      <td>91-97</td>
-                      <td>77</td>
+                      <th>Genre</th>
+                      <td>{{ product.genre }}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <div
-                class="tab-pane fade"
-                id="reviews"
-                role="tabpanel"
-                aria-labelledby="reviews-tab"
-              >
-                <div
-                  class="d-flex justify-content-between align-items-center mb-4"
-                >
-                  <h4>Avis clients</h4>
-                  <button class="btn btn-outline-primary" id="write-review-btn">
-                    Écrire un avis
-                  </button>
+              <!-- Contenu de l'onglet Avis -->
+              <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h4>Avis des clients</h4>
+                  <button class="btn btn-outline-primary" id="write-review-btn">Écrire un avis</button>
                 </div>
-
-                <div class="row mb-4">
-                  <div class="col-md-4">
-                    <div class="text-center border p-4 rounded">
-                      <h2 class="display-4 fw-bold">4.5</h2>
-                      <div class="mb-2">
-                        <i class="bi bi-star-fill text-warning"></i>
-                        <i class="bi bi-star-fill text-warning"></i>
-                        <i class="bi bi-star-fill text-warning"></i>
-                        <i class="bi bi-star-fill text-warning"></i>
-                        <i class="bi bi-star-half text-warning"></i>
-                      </div>
-                      <p class="text-muted">Basé sur 24 avis</p>
-                    </div>
-                  </div>
-                  <div class="col-md-8">
-                    <div class="ratings-breakdown">
-                      <div class="d-flex align-items-center mb-2">
-                        <div class="me-2">5 étoiles</div>
-                        <div class="progress flex-grow-1" style="height: 10px">
-                          <div
-                            class="progress-bar bg-warning"
-                            role="progressbar"
-                            style="width: 70%"
-                            aria-valuenow="70"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                          ></div>
-                        </div>
-                        <div class="ms-2">70%</div>
-                      </div>
-                      <div class="d-flex align-items-center mb-2">
-                        <div class="me-2">4 étoiles</div>
-                        <div class="progress flex-grow-1" style="height: 10px">
-                          <div
-                            class="progress-bar bg-warning"
-                            role="progressbar"
-                            style="width: 20%"
-                            aria-valuenow="20"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                          ></div>
-                        </div>
-                        <div class="ms-2">20%</div>
-                      </div>
-                      <div class="d-flex align-items-center mb-2">
-                        <div class="me-2">3 étoiles</div>
-                        <div class="progress flex-grow-1" style="height: 10px">
-                          <div
-                            class="progress-bar bg-warning"
-                            role="progressbar"
-                            style="width: 5%"
-                            aria-valuenow="5"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                          ></div>
-                        </div>
-                        <div class="ms-2">5%</div>
-                      </div>
-                      <div class="d-flex align-items-center mb-2">
-                        <div class="me-2">2 étoiles</div>
-                        <div class="progress flex-grow-1" style="height: 10px">
-                          <div
-                            class="progress-bar bg-warning"
-                            role="progressbar"
-                            style="width: 3%"
-                            aria-valuenow="3"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                          ></div>
-                        </div>
-                        <div class="ms-2">3%</div>
-                      </div>
-                      <div class="d-flex align-items-center mb-2">
-                        <div class="me-2">1 étoile</div>
-                        <div class="progress flex-grow-1" style="height: 10px">
-                          <div
-                            class="progress-bar bg-warning"
-                            role="progressbar"
-                            style="width: 2%"
-                            aria-valuenow="2"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                          ></div>
-                        </div>
-                        <div class="ms-2">2%</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 <div id="review-list">
-                  <!-- Avis 1 -->
-                  <div class="card mb-3">
-                    <div class="card-body">
-                      <div class="d-flex justify-content-between mb-2">
-                        <div>
-                          <h5 class="card-title">Thomas D.</h5>
-                          <div class="text-warning">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
+                  {% if reviews %}
+                    {% for review in reviews %}
+                      <div class="card mb-3">
+                        <div class="card-body">
+                          <div class="d-flex justify-content-between">
+                            <div>
+                              <strong>{{ review.nom_auteur if review.nom_auteur is defined else "Anonyme" }}</strong>
+                              <div class="text-warning">
+                                {% for i in range(1, 6) %}
+                                  {% if i <= review.note %}
+                                    <i class="bi bi-star-fill"></i>
+                                  {% else %}
+                                    <i class="bi bi-star"></i>
+                                  {% endif %}
+                                {% endfor %}
+                              </div>
+                            </div>
+                            <div class="text-muted">{{ review.date_avis }}</div>
                           </div>
+                          <p class="card-text mt-2">{{ review.commentaire }}</p>
                         </div>
-                        <div class="text-muted">Il y a 2 jours</div>
                       </div>
-                      <h6>Excellente qualité !</h6>
-                      <p class="card-text">
-                        Je suis très satisfait de cette chemise. Le tissu est de
-                        bonne qualité et la coupe est parfaite. Je recommande
-                        vivement ce produit à tous ceux qui cherchent une
-                        chemise à la fois élégante et confortable.
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Avis 2 -->
-                  <div class="card mb-3">
-                    <div class="card-body">
-                      <div class="d-flex justify-content-between mb-2">
-                        <div>
-                          <h5 class="card-title">Sophie M.</h5>
-                          <div class="text-warning">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star"></i>
-                          </div>
-                        </div>
-                        <div class="text-muted">Il y a 1 semaine</div>
-                      </div>
-                      <h6>Bon achat pour mon mari</h6>
-                      <p class="card-text">
-                        J'ai acheté cette chemise pour mon mari et il l'adore.
-                        La taille correspond parfaitement à ses mesures. Seul
-                        petit bémol, le tissu se froisse assez facilement, mais
-                        rien de dramatique. Très bon rapport qualité-prix.
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Avis 3 -->
-                  <div class="card mb-3">
-                    <div class="card-body">
-                      <div class="d-flex justify-content-between mb-2">
-                        <div>
-                          <h5 class="card-title">Lucas B.</h5>
-                          <div class="text-warning">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star"></i>
-                            <i class="bi bi-star"></i>
-                          </div>
-                        </div>
-                        <div class="text-muted">Il y a 2 semaines</div>
-                      </div>
-                      <h6>Taille un peu petite</h6>
-                      <p class="card-text">
-                        La chemise est jolie et le tissu agréable, mais je
-                        trouve que la taille est un peu petite. J'aurais dû
-                        prendre une taille au-dessus. Sinon, le motif est fidèle
-                        aux photos.
-                      </p>
-                    </div>
-                  </div>
-
-                  <!-- Voir plus d'avis -->
-                  <div class="text-center mt-4">
-                    <button id="load-more-reviews" class="btn btn-outline-dark">
-                      Voir plus d'avis
-                    </button>
-                  </div>
+                    {% endfor %}
+                  {% else %}
+                    <p>Aucun avis pour ce produit.</p>
+                  {% endif %}
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Produits associés -->
-        <div class="related-products mt-5">
-          <h3 class="mb-4">Vous aimerez aussi</h3>
-          <div class="row g-4" id="related-products">
-            <!-- Produits chargés dynamiquement -->
-          </div>
-        </div>
+        <!-- Fin des onglets -->
       </div>
     </section>
 
-    <!-- Zone de notification -->
-    <div
-      id="notification-container"
-      class="position-fixed bottom-0 end-0 p-3"
-    ></div>
-
     <!-- Footer -->
     <footer class="bg-dark text-white py-4 mt-5">
-      <div class="container">
-        <div class="row">
-          <div class="col-md-4">
-            <h5>StyleShop</h5>
-            <p>
-              Votre destination mode préférée pour des vêtements de qualité à
-              prix abordables.
-            </p>
-          </div>
-          <div class="col-md-4">
-            <h5>Liens Utiles</h5>
-            <ul class="list-unstyled">
-              <li><a href="#" class="text-white">À propos de nous</a></li>
-              <li><a href="#" class="text-white">Conditions générales</a></li>
-              <li>
-                <a href="#" class="text-white">Politique de confidentialité</a>
-              </li>
-              <li><a href="#" class="text-white">FAQ</a></li>
-            </ul>
-          </div>
-          <div class="col-md-4">
-            <h5>Contact</h5>
-            <address>
-              <p>123 Rue de la Mode<br />75000 Paris, France</p>
-              <p>Email: contact@styleshop.fr<br />Tél: +33 1 23 45 67 89</p>
-            </address>
-          </div>
-        </div>
-        <hr />
-        <div class="text-center">
-          <p>&copy; 2025 StyleShop. Tous droits réservés.</p>
-        </div>
+      <div class="container text-center">
+        <p>&copy; 2025 StyleShop. Tous droits réservés.</p>
       </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="../js/main.js"></script>
-    <script src="../js/produits.js"></script>
-    <script src="../js/panier.js"></script>
-    <script src="../js/notifications.js"></script>
   </body>
 </html>

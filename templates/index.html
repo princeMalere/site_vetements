@@ -20,7 +20,7 @@
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-          <a class="navbar-brand" href="index.html">StyleShop</a>
+          <a class="navbar-brand" href="{{ url_for('index') }}">StyleShop</a>
           <button
             class="navbar-toggler"
             type="button"
@@ -32,15 +32,13 @@
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
               <li class="nav-item">
-                <a class="nav-link active" href="index.html">Accueil</a>
+                <a class="nav-link active" href="{{ url_for('index') }}">Accueil</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="produits.html">Produits</a>
+                <a class="nav-link" href="{{ url_for('produits') }}">Produits</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="suivi-commande.html"
-                  >Suivi Commandes</a
-                >
+                <a class="nav-link" href="#">Suivi Commandes</a>
               </li>
             </ul>
             <div class="d-flex">
@@ -81,9 +79,8 @@
             occasions.
           </p>
           <div class="d-flex gap-3 justify-content-center">
-            <a href="produits.html" class="btn btn-primary btn-lg px-4 fw-bold"
-              >Voir les produits</a
-            >
+            <a href="{{ url_for('produits') }}" class="btn btn-primary btn-lg px-4 fw-bold">Voir les produits</a>
+
           </div>
         </div>
       </div>
@@ -149,12 +146,23 @@
       </div>
     </section>
 
-    <!-- Produits en vedette -->
+    <!-- Section Produits en Vedette -->
     <section class="featured-products py-5">
       <div class="container">
         <h2 class="text-center mb-4">Produits en Vedette</h2>
         <div class="row g-4" id="featured-products">
-          <!-- Ces produits seront chargés dynamiquement via JavaScript -->
+          {% for produit in featured_products %}
+            <div class="col-md-3">
+              <div class="card">
+                <img src="{{ produit.image_url }}" class="card-img-top" alt="{{ produit.nom }}">
+                <div class="card-body">
+                  <h5 class="card-title">{{ produit.nom }}</h5>
+                  <p class="card-text">{{ produit.prix }} €</p>
+                  <a href="{{ url_for('produit_detail', produit_id=produit.id_produit) }}" class="btn btn-primary">Voir le produit</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
         </div>
       </div>
     </section>

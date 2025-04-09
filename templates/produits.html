@@ -20,7 +20,7 @@
     <header>
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-          <a class="navbar-brand" href="index.html">StyleShop</a>
+          <a class="navbar-brand" href="{{ url_for('index') }}">StyleShop</a>
           <button
             class="navbar-toggler"
             type="button"
@@ -32,10 +32,10 @@
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
               <li class="nav-item">
-                <a class="nav-link" href="index.html">Accueil</a>
+                <a class="nav-link" href="{{ url_for('index') }}">Accueil</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="produits.html">Produits</a>
+                <a class="nav-link active" href="{{ url_for('produits') }}">Produits</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="suivi-commande.html"
@@ -326,10 +326,28 @@
               </div>
             </div>
 
-            <!-- Grille de produits -->
-            <div class="row g-4" id="products-grid">
-              <!-- Les produits seront chargés dynamiquement ici -->
-            </div>
+        <!-- Grille de produits -->
+        <div class="row g-4" id="products-grid">
+          {% if products %}
+            {% for produit in products %}
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <img src="{{ produit.image_url }}" class="card-img-top" alt="{{ produit.nom }}">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ produit.nom }}</h5>
+                    <p class="card-text">{{ produit.description }}</p>
+                  </div>
+                  <div class="card-footer">
+                    <p class="text-muted">{{ produit.prix }} €</p>
+                    <a href="{{ url_for('produit_detail', produit_id=produit.id_produit) }}" class="btn btn-primary">Voir le produit</a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>Aucun produit trouvé.</p>
+          {% endif %}
+        </div>
 
             <!-- Pagination -->
             <nav class="my-4">
