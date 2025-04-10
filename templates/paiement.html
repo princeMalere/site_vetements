@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paiement - StyleShop</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+</head>
+<body>
+  {% include "header.html" %}
+  
+  <div class="container py-3">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('commande') }}">Commande</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Paiement</li>
+      </ol>
+    </nav>
+  </div>
+  
+  <section class="checkout-section py-4">
+    <div class="container">
+      <h1 class="mb-4">Paiement</h1>
+      <form id="payment-form" action="{{ url_for('paiement') }}" method="post">
+        <!-- Pour cet exemple, nous proposons simplement un choix de mode de paiement -->
+        <div class="mb-3">
+          <label for="payment_method" class="form-label">Mode de paiement</label>
+          <select class="form-select" id="payment_method" name="payment_method" required>
+            <option value="">Sélectionnez un mode de paiement</option>
+            <option value="carte">Carte bancaire</option>
+            <option value="paypal">PayPal</option>
+          </select>
+        </div>
+        <!-- Ici vous pourriez ajouter d'autres champs (par exemple, informations de carte si nécessaire) -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg">Confirmer le paiement</button>
+        </div>
+      </form>
+    </div>
+  </section>
+  
+  {% include "footer.html" %}
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

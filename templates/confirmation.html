@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmation - StyleShop</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+</head>
+<body>
+  {% include "header.html" %}
+  
+  <div class="container py-3">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('commande') }}">Commande</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Confirmation</li>
+      </ol>
+    </nav>
+  </div>
+  
+  <section class="checkout-section py-4">
+    <div class="container">
+      <h1 class="mb-4">Commande Confirmée</h1>
+      <div class="alert alert-success">
+        <p>Merci pour votre commande !</p>
+      </div>
+      
+      <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Récapitulatif de livraison</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Nom :</strong> {{ shipping_info.first_name }} {{ shipping_info.last_name }}</p>
+          <p><strong>Email :</strong> {{ shipping_info.email }}</p>
+          <p><strong>Téléphone :</strong> {{ shipping_info.phone }}</p>
+          <p><strong>Adresse :</strong> {{ shipping_info.address }} {% if shipping_info.address2 %}, {{ shipping_info.address2 }}{% endif %}, {{ shipping_info.postal_code }} {{ shipping_info.city }}, {{ shipping_info.country }}</p>
+          <p><strong>Mode de livraison :</strong> {{ shipping_info.shipping_method|capitalize }}</p>
+          <p><strong>Notes :</strong> {{ shipping_info.order_notes }}</p>
+        </div>
+      </div>
+      
+      <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Informations de paiement</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Mode de paiement :</strong> {{ payment_info.payment_method|capitalize }}</p>
+          <p><strong>Statut :</strong> {{ payment_info.status }}</p>
+        </div>
+      </div>
+      
+      <a href="{{ url_for('index') }}" class="btn btn-primary">Retour à l'accueil</a>
+    </div>
+  </section>
+  
+  {% include "footer.html" %}
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

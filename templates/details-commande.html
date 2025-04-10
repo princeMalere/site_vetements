@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Détails de la commande - StyleShop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../static/style.css" />
+    <link rel="stylesheet" href="../static/responsive.css" />
+  </head>
+  <body>
+    {% include "header.html" %}
+    <div class="container py-3">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('suivi_commandes') }}">Suivi des commandes</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Détails de la commande</li>
+        </ol>
+      </nav>
+      <h1 class="mb-4">Détails de la commande #{{ "ORD-" + ("%05d"|format(order.id_commande)) }}</h1>
+
+      <!-- Informations générales -->
+      <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Informations générales</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Date de commande :</strong> {{ order.date_commande.strftime('%d/%m/%Y %H:%M') if order.date_commande }}</p>
+          <p><strong>Statut de la commande :</strong> {{ order.commande_statut|capitalize }}</p>
+          <p><strong>Statut du paiement :</strong> {{ order.paiement_statut|capitalize if order.paiement_statut else "N/A" }}</p>
+          <p><strong>Mode de paiement :</strong> {{ order.methode if order.methode else "N/A" }}</p>
+        </div>
+      </div>
+
+      <!-- Informations de livraison -->
+      <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Informations de livraison</h5>
+        </div>
+        <div class="card-body">
+          <p><strong>Adresse de livraison :</strong></p>
+          <address>
+            {{ order.adresse }}<br />
+            {{ order.code_postal }} {{ order.ville }}, {{ order.pays }}<br />
+            Téléphone : {{ order.telephone }}
+          </address>
+          <p><strong>Mode de livraison :</strong> {{ order.mode_livraison }}</p>
+        </div>
+      </div>
+
+      <!-- Liste des articles commandés -->
+      <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+          <h5 class="mb-0">Articles commandés</h5>
+        </div>
+        <div class="card-body">
+          {% if items %}
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Quantité</th>
+                  <th>Prix unitaire</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                <tr>
+                  <td>{{ item.nom }}</td>
+                  <td>{{ item.quantite }}</td>
+                  <td>${{ item.prix }}</td>
+                  <td>${{ (item.prix * item.quantite)|round(2) }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p>Aucun article trouvé pour cette commande.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <a href="{{ url_for('suivi_commandes') }}" class="btn btn-secondary">Retour au suivi des commandes</a>
+    </div>
+    {% include "footer.html" %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/main.js"></script>
+  </body>
+</html>

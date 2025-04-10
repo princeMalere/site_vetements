@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, session
 import pymysql, pymysql.cursors
 from flask_bcrypt import Bcrypt
+import random
+
 
 app = Flask(__name__)
 app.secret_key = 'cle_secrete'  # Remplacez par une clé secrète forte
@@ -10,7 +12,7 @@ def get_db_connection():
     conn = pymysql.connect(
         host='localhost',
         user='root',
-        password='********',  # Remplacez par votre mot de passe
+        password='Mr_Robot_272000',  # Remplacez par votre mot de passe
         db='ecommerce_db',
         charset='utf8mb4'
     )
@@ -302,6 +304,260 @@ def panier():
     tax = subtotal * 0.20
     total = subtotal + shipping_cost + tax
     return render_template("panier.html", cart_items=cart_items, subtotal=subtotal, shipping_cost=shipping_cost, tax=tax, total=total)
+
+
+# -----------------------------------------------
+# 7. Workflow Commande, Paiement et Confirmation
+# -----------------------------------------------
+
+# Étape 1 : Informations de livraison et création de commande (commande.html)
+@app.route("/commande", methods=["GET", "POST"])
+def commande():
+    if "user" not in session:
+        flash("Veuillez vous connecter pour finaliser votre commande.")
+        return redirect(url_for("connexion"))
+    
+    user_id = session["user"]["id_user"]
+    
+    if request.method == "POST":
+        shipping_info = {
+            "first_name": request.form.get("first-name"),
+            "last_name": request.form.get("last-name"),
+            "email": request.form.get("email"),
+            "phone": request.form.get("phone"),
+            "address": request.form.get("address"),
+            "address2": request.form.get("address2"),
+            "postal_code": request.form.get("postal-code"),
+            "city": request.form.get("city"),
+            "country": request.form.get("country"),
+            "shipping_method": request.form.get("shipping-method"),
+            "order_notes": request.form.get("order-notes")
+        }
+        session["shipping_info"] = shipping_info
+
+        # Récupérer le panier actif
+        conn = get_db_connection()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor.execute("SELECT * FROM Paniers WHERE id_user = %s AND statut = 'actif'", (user_id,))
+        panier = cursor.fetchone()
+        if not panier:
+            flash("Aucun panier actif trouvé.")
+            return redirect(url_for("panier"))
+        panier_id = panier["id_panier"]
+        
+        # Créer la commande en insérant une nouvelle ligne dans la table Commandes
+        cursor.execute("INSERT INTO Commandes (id_user, id_panier, date_commande, statut) VALUES (%s, %s, NOW(), 'en attente')", (user_id, panier_id))
+        id_commande = cursor.lastrowid
+        
+        # Mettre à jour le statut du panier pour marquer qu'il est validé
+        cursor.execute("UPDATE Paniers SET statut = 'validé' WHERE id_panier = %s", (panier_id,))
+        
+        # Insérer les informations de livraison dans la table Livraisons
+        cursor.execute(
+            "INSERT INTO Livraisons (id_commande, adresse, code_postal, ville, pays, telephone, mode_livraison) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            (id_commande, shipping_info["address"], shipping_info["postal_code"], shipping_info["city"], shipping_info["country"], shipping_info["phone"], shipping_info["shipping_method"])
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        # Stocker l'id de la commande dans la session pour la suite
+        session["id_commande"] = id_commande
+        return redirect(url_for("paiement"))
+    
+    # Pour un GET, calculer et afficher le récapitulatif du panier
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM Paniers WHERE id_user = %s AND statut = 'actif'", (user_id,))
+    panier = cursor.fetchone()
+    cart_items = []
+    subtotal = 0.0
+    if panier:
+        panier_id = panier["id_panier"]
+        query = """
+            SELECT pp.quantite, p.*
+            FROM Panier_Produits pp
+            JOIN Produits p ON pp.id_produit = p.id_produit
+            WHERE pp.id_panier = %s
+        """
+        cursor.execute(query, (panier_id,))
+        cart_items = cursor.fetchall()
+        for item in cart_items:
+            subtotal += item["quantite"] * float(item["prix"])
+    cursor.close()
+    conn.close()
+    
+    shipping_cost = 4.99 if subtotal > 0 else 0.0
+    tax = subtotal * 0.20
+    total = subtotal + shipping_cost + tax
+    
+    return render_template("commande.html",
+                           cart_items=cart_items,
+                           subtotal=subtotal,
+                           shipping_cost=shipping_cost,
+                           tax=tax,
+                           total=total)
+
+# Étape 2 : Paiement (paiement.html)
+@app.route("/paiement", methods=["GET", "POST"])
+def paiement():
+    if "user" not in session or "shipping_info" not in session or "id_commande" not in session:
+        flash("Veuillez compléter vos informations de livraison.")
+        return redirect(url_for("commande"))
+    
+    # Pour obtenir le montant total, recalculons-le à partir du panier de la commande validée
+    user_id = session["user"]["id_user"]
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM Paniers WHERE id_user = %s AND statut = 'validé'", (user_id,))
+    panier = cursor.fetchone()
+    subtotal = 0.0
+    if panier:
+        panier_id = panier["id_panier"]
+        query = """
+            SELECT pp.quantite, p.prix
+            FROM Panier_Produits pp
+            JOIN Produits p ON pp.id_produit = p.id_produit
+            WHERE pp.id_panier = %s
+        """
+        cursor.execute(query, (panier_id,))
+        items = cursor.fetchall()
+        for item in items:
+            subtotal += item["quantite"] * float(item["prix"])
+    cursor.close()
+    conn.close()
+    
+    shipping_cost = 4.99 if subtotal > 0 else 0.0
+    tax = subtotal * 0.20
+    total = subtotal + shipping_cost + tax
+    
+    if request.method == "POST":
+        payment_method = request.form.get("payment_method")
+        # Simulation du paiement avec 90% de succès
+        if random.random() < 0.9:
+            payment_status = "réussi"
+        else:
+            payment_status = "échec"
+        
+        # Insérer l'enregistrement du paiement dans la table Paiements
+        id_commande = session.get("id_commande")
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO Paiements (id_commande, montant, methode, statut, date_paiement) VALUES (%s, %s, %s, %s, NOW())",
+            (id_commande, total, payment_method, payment_status)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        session["payment_info"] = {"payment_method": payment_method, "status": payment_status}
+        
+        if payment_status == "réussi":
+            flash("Paiement effectué avec succès!")
+            return redirect(url_for("confirmation"))
+        else:
+            flash("Erreur lors du paiement. Veuillez réessayer.")
+            return redirect(url_for("paiement"))
+    
+    return render_template("paiement.html", total=total)
+
+# Étape 3 : Confirmation (confirmation.html)
+@app.route("/confirmation")
+def confirmation():
+    if "user" not in session or "shipping_info" not in session or "payment_info" not in session or "id_commande" not in session:
+        flash("Commande incomplète.")
+        return redirect(url_for("commande"))
+    
+    shipping_info = session.get("shipping_info")
+    payment_info = session.get("payment_info")
+    
+    # Ici, vous pourriez, par exemple, récupérer la commande finalisée depuis la DB en utilisant l'id_commande
+    id_commande = session.get("id_commande")
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM Commandes WHERE id_commande = %s", (id_commande,))
+    commande = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    
+    return render_template("confirmation.html", shipping_info=shipping_info, payment_info=payment_info, commande=commande)
+
+
+# -----------------------------------------------
+# Route suivi commandes
+# -----------------------------------------------
+@app.route("/suivi_commandes")
+def suivi_commandes():
+    if "user" not in session:
+        flash("Vous devez être connecté pour suivre vos commandes.")
+        return redirect(url_for("connexion"))
+    
+    user_id = session["user"]["id_user"]
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    query = """
+        SELECT c.id_commande, c.date_commande, c.statut, 
+               l.adresse, l.code_postal, l.ville, l.pays, l.telephone, l.mode_livraison,
+               p.statut AS paiement_statut
+        FROM Commandes c
+        JOIN Livraisons l ON c.id_commande = l.id_commande
+        LEFT JOIN Paiements p ON c.id_commande = p.id_commande
+        WHERE c.id_user = %s
+        ORDER BY c.date_commande DESC
+    """
+    cursor.execute(query, (user_id,))
+    orders = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    return render_template("suivi-commande.html", orders=orders)
+
+
+# -----------------------------------------------
+# Route details-commandes
+# -----------------------------------------------
+@app.route("/details_commande/<int:id_commande>")
+def details_commande(id_commande):
+    if "user" not in session:
+        flash("Vous devez être connecté pour consulter les détails de la commande.")
+        return redirect(url_for("connexion"))
+    
+    user_id = session["user"]["id_user"]
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    
+    query_order = """
+       SELECT c.id_commande, c.date_commande, c.statut AS commande_statut,
+              l.adresse, l.code_postal, l.ville, l.pays, l.telephone, l.mode_livraison,
+              p.statut AS paiement_statut, p.methode, p.date_paiement, p.montant
+       FROM Commandes c
+       JOIN Livraisons l ON c.id_commande = l.id_commande
+       LEFT JOIN Paiements p ON c.id_commande = p.id_commande
+       WHERE c.id_commande = %s AND c.id_user = %s
+    """
+    cursor.execute(query_order, (id_commande, user_id))
+    order = cursor.fetchone()
+    if not order:
+        flash("Commande introuvable.")
+        return redirect(url_for("suivi_commandes"))
+    
+    query_items = """
+       SELECT pp.quantite, pr.nom, pr.prix, pr.description
+       FROM Panier_Produits pp
+       JOIN Produits pr ON pp.id_produit = pr.id_produit
+       WHERE pp.id_panier = (SELECT id_panier FROM Commandes WHERE id_commande = %s)
+    """
+    cursor.execute(query_items, (id_commande,))
+    items = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    return render_template("details-commande.html", order=order, items=items)
+
+
+
 
 
 if __name__ == "__main__":

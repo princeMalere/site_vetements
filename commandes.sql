@@ -98,6 +98,25 @@ CREATE TABLE Historique_Commandes (
     FOREIGN KEY (id_commande) REFERENCES Commandes(id_commande)
 );
 
+-- Création de la table Livraisons pour stocker les informations de livraison des commandes
+CREATE TABLE Livraisons (
+    id_livraison INT AUTO_INCREMENT PRIMARY KEY,
+    id_commande INT NOT NULL, -- Référence à la commande
+    adresse VARCHAR(255) NOT NULL,
+    complement VARCHAR(255),
+    code_postal VARCHAR(20) NOT NULL,
+    ville VARCHAR(100) NOT NULL,
+    pays VARCHAR(100) NOT NULL,
+    telephone VARCHAR(20) NOT NULL,
+    mode_livraison ENUM('standard', 'express', 'pickup') DEFAULT 'standard',
+    date_livraison_prevue DATE,
+    date_livraison_effective DATE,
+    CONSTRAINT fk_commande_livraison FOREIGN KEY (id_commande) REFERENCES Commandes(id_commande)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+
 ---------------------------------------------------------------------
 -- Peuplement de la base de données
 ---------------------------------------------------------------------
@@ -340,6 +359,7 @@ DELIMITER //
 CREATE PROCEDURE ConvertirPanierEnCommande(IN p_id_panier INT)
 BEGIN
     DECLARE v_id_user INT;
+    DECLARE v_id_commande INT;
 
     -- Récupérer l'ID de l'utilisateur lié au panier
     SELECT id_user INTO v_id_user
@@ -349,13 +369,19 @@ BEGIN
     -- Créer une nouvelle commande pour ce panier
     INSERT INTO Commandes (id_user, id_panier, date_commande, statut)
     VALUES (v_id_user, p_id_panier, NOW(), 'en attente');
+    SET v_id_commande = LAST_INSERT_ID();
 
     -- Mettre à jour le statut du panier pour indiquer qu'il a été validé
     UPDATE Paniers
     SET statut = 'validé'
     WHERE id_panier = p_id_panier;
+
+    -- Insérer un enregistrement dans la table Livraisons avec des valeurs par défaut
+    INSERT INTO Livraisons (id_commande, adresse, code_postal, ville, pays, telephone, mode_livraison)
+    VALUES (v_id_commande, '', '', '', '', '', 'standard');
 END //
 DELIMITER ;
+
 
 -- Procédure pour annuler une commande
 DELIMITER //
@@ -526,3 +552,17 @@ BEGIN
     WHERE id_produit = OLD.id_produit;
 END //
 DELIMITER ;
+
+-- trigger responsable d'insérer une ligne dans Historique_Commandes avec l'ancien et le nouveau statut et la date de modification
+DELIMITER //
+CREATE TRIGGER historique_commandes_after_update
+AFTER UPDATE ON Commandes
+FOR EACH ROW
+BEGIN
+    IF OLD.statut <> NEW.statut THEN
+        INSERT INTO Historique_Commandes (id_commande, ancien_statut, nouveau_statut, date_modification)
+        VALUES (NEW.id_commande, OLD.statut, NEW.statut, NOW());
+    END IF;
+END //
+DELIMITER ;
+
