@@ -12,7 +12,7 @@ def get_db_connection():
     conn = pymysql.connect(
         host='localhost',
         user='root',
-        password='Mr_Robot_272000',  # Remplacez par votre mot de passe
+        password='********',  # Remplacez par votre mot de passe
         db='ecommerce_db',
         charset='utf8mb4'
     )
