@@ -4,14 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Suivi des commandes - StyleShop</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
-    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="../static/style.css" />
     <link rel="stylesheet" href="../static/responsive.css" />
   </head>
@@ -23,10 +17,8 @@
     <div class="container py-3">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{url_for('index')}}">Accueil</a></li>
-          <li class="breadcrumb-item active" aria-current="page">
-            Suivi des commandes
-          </li>
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Accueil</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Suivi des commandes</li>
         </ol>
       </nav>
     </div>
@@ -37,119 +29,123 @@
         <h1 class="mb-4">Suivi de vos commandes</h1>
 
         <!-- Affichage de l'historique des commandes -->
-        <!-- Liste des commandes -->
-      <div id="order-list-section">
-        {% if orders %}
-          {% for order in orders %}
-            <div class="card mb-4">
-              <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                  Commande #{{ "ORD-" + ("%05d"|format(order.id_commande)) }}
-                </h5>
-                <span class="badge 
-                  {% if order.statut == 'en attente' %}
-                    bg-warning
-                  {% elif order.statut == 'validé' %}
-                    bg-info
-                  {% elif order.statut == 'preparation' %}
-                    bg-secondary
-                  {% elif order.statut == 'expédiée' %}
-                    bg-primary
-                  {% elif order.statut == 'livrée' %}
-                    bg-success
-                  {% elif order.statut == 'annulée' %}
-                    bg-danger
-                  {% else %}
-                    bg-secondary
-                  {% endif %}
-                ">
-                  {{ order.statut|capitalize }}
-                </span>
+        <div id="order-list-section">
+          {% if orders %}
+            {% for order in orders %}
+              <div class="card mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0">
+                    Commande #{{ "ORD-" + ("%05d"|format(order.id_commande)) }}
+                  </h5>
+                  <span class="badge 
+                    {% if order.statut == 'en attente' %}
+                      bg-warning
+                    {% elif order.statut == 'validé' %}
+                      bg-info
+                    {% elif order.statut == 'preparation' %}
+                      bg-secondary
+                    {% elif order.statut == 'expédiée' %}
+                      bg-primary
+                    {% elif order.statut == 'livrée' %}
+                      bg-success
+                    {% elif order.statut == 'annulée' %}
+                      bg-danger
+                    {% else %}
+                      bg-secondary
+                    {% endif %}
+                  ">
+                    {{ order.statut|capitalize }}
+                  </span>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>Date de commande:</strong>
+                        {{ order.date_commande.strftime('%d/%m/%Y') if order.date_commande }}
+                      </p>
+                      <p><strong>Mode de livraison:</strong> {{ order.mode_livraison }}</p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>Adresse de livraison:</strong></p>
+                      <address>
+                        {{ order.adresse }}<br>
+                        {{ order.code_postal }} {{ order.ville }}, {{ order.pays }}<br>
+                        Téléphone: {{ order.telephone }}
+                      </address>
+                    </div>
+                  </div>
+                  <hr />
+                  <h6 class="mb-3">Suivi de commande</h6>
+                  <div class="timeline">
+                    <!-- Commande confirmée -->
+                    <div class="timeline-item {% if order.statut in ['en attente', 'validé', 'preparation', 'expédiée', 'livrée'] %}completed{% endif %}">
+                      <div class="d-flex">
+                        <div>
+                          <h6 class="mb-0">Commande confirmée</h6>
+                          <p class="text-muted mb-0">
+                            {{ order.date_commande.strftime('%d/%m/%Y %H:%M') if order.date_commande else "--" }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Paiement validé -->
+                    <div class="timeline-item {% if order.paiement_statut == 'réussi' %}completed{% endif %}">
+                      <div class="d-flex">
+                        <div>
+                          <h6 class="mb-0">Paiement validé</h6>
+                          <p class="text-muted mb-0">--:--</p>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- En cours de préparation -->
+                    <div class="timeline-item {% if order.statut in ['preparation', 'expédiée', 'livrée'] %}active{% endif %}">
+                      <div class="d-flex">
+                        <div>
+                          <h6 class="mb-0">En cours de préparation</h6>
+                          <p class="text-muted mb-0">--:--</p>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Expédition -->
+                    <div class="timeline-item {% if order.statut in ['expédiée', 'livrée'] %}active{% endif %}">
+                      <div class="d-flex">
+                        <div>
+                          <h6 class="mb-0">Expédition</h6>
+                          <p class="text-muted mb-0">--:--</p>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Livraison -->
+                    <div class="timeline-item {% if order.statut == 'livrée' %}active{% endif %}">
+                      <div class="d-flex">
+                        <div>
+                          <h6 class="mb-0">Livraison</h6>
+                          <p class="text-muted mb-0">--:--</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Boutons de la carte de commande -->
+                  <div class="d-flex justify-content-end mt-3">
+                    <a href="{{ url_for('details_commande', id_commande=order.id_commande) }}" class="btn btn-primary me-2">
+                      Détails de la commande
+                    </a>
+                    <!-- Bouton d'annulation visible uniquement si la commande n'est pas expédiée ou livrée -->
+                    {% if order.statut in ['en attente', 'validé', 'preparation'] %}
+                      <form action="{{ url_for('annuler_commande', order_id=order.id_commande) }}" method="post" onsubmit="return confirm('Êtes-vous certain de vouloir annuler cette commande ?');">
+                        <button type="submit" class="btn btn-danger">Annuler commande</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </div>
               </div>
-              <div class="card-body">
-                <div class="row">
-                  <div class="col-md-6">
-                    <p><strong>Date de commande:</strong>
-                      {{ order.date_commande.strftime('%d/%m/%Y') if order.date_commande }}
-                    </p>
-                    <p><strong>Mode de livraison:</strong> {{ order.mode_livraison }}</p>
-                  </div>
-                  <div class="col-md-6">
-                    <p><strong>Adresse de livraison:</strong></p>
-                    <address>
-                      {{ order.adresse }}<br>
-                      {{ order.code_postal }} {{ order.ville }}, {{ order.pays }}<br>
-                      Téléphone: {{ order.telephone }}
-                    </address>
-                  </div>
-                </div>
-                <hr />
-                <h6 class="mb-3">Suivi de commande</h6>
-                <div class="timeline">
-                  <!-- Commande confirmée -->
-                  <div class="timeline-item {% if order.statut in ['en attente', 'validé', 'preparation', 'expédiée', 'livrée'] %}completed{% endif %}">
-                    <div class="d-flex">
-                      <div>
-                        <h6 class="mb-0">Commande confirmée</h6>
-                        <p class="text-muted mb-0">
-                          {{ order.date_commande.strftime('%d/%m/%Y %H:%M') if order.date_commande else "--" }}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Paiement validé, en se basant sur le statut de paiement -->
-                  <div class="timeline-item {% if order.paiement_statut == 'réussi' %}completed{% endif %}">
-                    <div class="d-flex">
-                      <div>
-                        <h6 class="mb-0">Paiement validé</h6>
-                        <p class="text-muted mb-0">--:--</p>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- En cours de préparation -->
-                  <div class="timeline-item {% if order.statut in ['preparation', 'expédiée', 'livrée'] %}active{% endif %}">
-                    <div class="d-flex">
-                      <div>
-                        <h6 class="mb-0">En cours de préparation</h6>
-                        <p class="text-muted mb-0">--:--</p>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Expédition -->
-                  <div class="timeline-item {% if order.statut in ['expédiée', 'livrée'] %}active{% endif %}">
-                    <div class="d-flex">
-                      <div>
-                        <h6 class="mb-0">Expédition</h6>
-                        <p class="text-muted mb-0">--:--</p>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Livraison -->
-                  <div class="timeline-item {% if order.statut == 'livrée' %}active{% endif %}">
-                    <div class="d-flex">
-                      <div>
-                        <h6 class="mb-0">Livraison</h6>
-                        <p class="text-muted mb-0">--:--</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <!-- Bouton pour afficher les détails de la commande -->
-                <div class="d-flex justify-content-end mt-3">
-                  <a href="{{ url_for('details_commande', id_commande=order.id_commande) }}" class="btn btn-primary">
-                    Détails de la commande
-                  </a>
-                </div>
-              </div>
+            {% endfor %}
+          {% else %}
+            <div class="alert alert-info mb-4">
+              Aucune commande trouvée.
             </div>
-          {% endfor %}
-        {% else %}
-          <div class="alert alert-info mb-4">
-            Aucune commande trouvée.
-          </div>
-        {% endif %}
-      </div>
-
+          {% endif %}
+        </div>
       </div>
     </section>
 

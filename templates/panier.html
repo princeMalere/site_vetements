@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panier - StyleShop</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Panier - StyleShop</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <!-- Importation de Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+    </head>
+    
 <body>
     <!-- Header avec navigation -->
     {% include "header.html" %}
@@ -49,7 +52,7 @@
                                 <div class="card-body">
                                     <div id="cart-items">
                                         {% for item in cart_items %}
-                                            <div class="cart-item mb-3 pb-3 border-bottom">
+                                        <div class="cart-item mb-3 pb-3 border-bottom" data-product-id="{{ item.id_produit }}">
                                                 <div class="row align-items-center">
                                                     <div class="col-md-2 col-4">
                                                         <img src="{{ item.image_url }}" class="img-fluid rounded" alt="{{ item.nom }}">
@@ -154,6 +157,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="../static/panier.js"></script>
     <!-- Scripts JS de panier non définis pour le moment -->
 </body>
 </html>

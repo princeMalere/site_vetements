@@ -171,7 +171,7 @@
                     <p>Aucun avis pour ce produit.</p>
                   {% endif %}
                 </div>
-                <!-- Affichage du formulaire d'avis uniquement si l'utilisateur est connecté et n'a pas laissé d'avis -->
+                <!-- Affichage du formulaire d'avis uniquement si l'utilisateur est connecté et n'a pas encore laissé d'avis -->
                 {% if session.get('user') and not my_review %}
                 <div id="review-form-container" class="mt-5">
                   <h4>Ajouter votre avis</h4>
@@ -196,7 +196,7 @@
                 {% elif session.get('user') and my_review %}
                   <p class="mt-4">Vous avez déjà laissé un avis. Vous pouvez le modifier en cliquant sur "Modifier mon avis".</p>
                 {% else %}
-                  <p class="mt-4">Pour laisser un avis, veuillez vous <a href="{{ url_for('connexion') }}">connecter</a>.</p>
+                  <p class="mt-4">Pour laisser un avis, veuillez vous svp <a href="{{ url_for('connexion') }}">connecter</a>.</p>
                 {% endif %}
               </div>
             </div>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, session
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, session, jsonify
 import pymysql, pymysql.cursors
 from flask_bcrypt import Bcrypt
 import random
@@ -13,7 +13,7 @@ def get_db_connection():
     conn = pymysql.connect(
         host='localhost',
         user='root',
-        password='******',  # A remplacer par le mot de passe de votre base de données
+        password='*******',  # A remplacer par le mot de passe de votre base de données
         db='ecommerce_db',
         charset='utf8mb4'
     )
@@ -75,7 +75,6 @@ def produits():
 
 # on récupère le produit sélectionné et les avis liés à ce produit
 @app.route("/produit/<int:produit_id>")
-@app.route("/produit/<int:produit_id>")
 def produit_detail(produit_id):
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
@@ -88,7 +87,7 @@ def produit_detail(produit_id):
         conn.close()
         abort(404)
     
-    # Récupération de la note moyenne via la fonction SQL
+    # On récupère la note moyenne via la fonction SQL CalculerMoyenneNotes à laquelle on passe l'id du produit
     cursor.execute("SELECT CalculerMoyenneNotes(%s) AS note_moyenne", (produit_id,))
     result = cursor.fetchone()
     product["note_moyenne"] = result["note_moyenne"] if result and result.get("note_moyenne") is not None else 0
@@ -105,11 +104,11 @@ def produit_detail(produit_id):
     cursor.close()
     conn.close()
     
-    # Calcul de my_review dans le code Python (en dehors du template)
+    # Calcul de my_review 
     my_review = None
     if session.get('user'):
         for review in reviews:
-            # Il est important que les types soient identiques (si besoin, convertissez en int)
+            # récupération de l'avis de l'utilisateur connecté
             if review['id_user'] == session.get('user')['id_user']:
                 my_review = review
                 break
@@ -131,11 +130,11 @@ def ajouter_avis(produit_id):
     note = request.form.get("note")
     user_id = session["user"]["id_user"]
 
-    # Connexion et insertion dans la table Avis (selon la structure de la table)
+    # Connexion et insertion dans la table Avis
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # Modification effectuée : utilisation de "commentaire" et "id_user"
+        # insertion d'un nouvel avis
         query = "INSERT INTO Avis (id_produit, id_user, note, commentaire, date_avis) VALUES (%s, %s, %s, %s, NOW())"
         cursor.execute(query, (produit_id, user_id, note, avis_text))
         conn.commit()
@@ -147,12 +146,13 @@ def ajouter_avis(produit_id):
         cursor.close()
         conn.close()
 
-    # Redirection vers la page de détail du produit après l'ajout de l'avis
+    # redirection vers la page de détail du produit après l'ajout de l'avis
     return redirect(url_for("produit_detail", produit_id=produit_id))
 
 # Endpoint pour modifier un avis existant
 @app.route("/modifier-avis/<int:produit_id>", methods=["GET", "POST"])
 def modifier_avis(produit_id):
+    # si l'utilisateur n'est pas connecté on le redirige vers la page de connexion
     if "user" not in session:
         flash("Veuillez vous connecter pour modifier votre avis.")
         return redirect(url_for("connexion"))
@@ -298,6 +298,30 @@ def deconnexion():
 # Route panier
 # -----------------------------------------------
 
+
+# context processor : pour injecter automatiquement le nombre total d’articles dans le contexte des templates
+@app.context_processor
+def inject_cart_count():
+    count = 0
+    if session.get("user"):
+        user_id = session["user"]["id_user"]
+        conn = get_db_connection()
+        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        # Récupérer le panier actif de l'utilisateur
+        cursor.execute("SELECT * FROM Paniers WHERE id_user = %s AND statut = 'actif'", (user_id,))
+        panier = cursor.fetchone()
+        if panier:
+            panier_id = panier["id_panier"]
+            # Calculer la somme des quantités pour ce panier
+            cursor.execute("SELECT SUM(quantite) as count FROM Panier_Produits WHERE id_panier = %s", (panier_id,))
+            result = cursor.fetchone()
+            if result and result.get("count"):
+                count = result["count"]
+        cursor.close()
+        conn.close()
+    return {'cart_count': count}
+
+
 # procédure d'ajout dans le panier 
 @app.route("/ajouter-panier", methods=["POST"])
 def ajouter_panier():
@@ -323,14 +347,14 @@ def ajouter_panier():
     panier = cursor.fetchone()
     
     if panier is None:
-        # Création d'un nouveau panier
+        # Création d'un nouveau panier si on ne trouve pas de panier actif pour l'utilisateur connecté
         cursor.execute("INSERT INTO Paniers (id_user, statut) VALUES (%s, 'actif')", (user_id,))
         conn.commit()
         panier_id = cursor.lastrowid
     else:
         panier_id = panier["id_panier"]
     
-    # Vérifier si le produit existe déjà dans le panier
+    # On vérifie si le produit existe déjà dans le panier
     cursor.execute("SELECT * FROM Panier_Produits WHERE id_panier = %s AND id_produit = %s", (panier_id, product_id))
     item = cursor.fetchone()
     if item is None:
@@ -369,7 +393,7 @@ def panier():
     subtotal = 0.0
     if panier:
         panier_id = panier["id_panier"]
-        # Récupérer les articles du panier avec les infos du produit
+        # Récupérer les articles du panier pour l'affichage
         query = """
             SELECT pp.quantite, p.*
             FROM Panier_Produits pp
@@ -378,18 +402,117 @@ def panier():
         """
         cursor.execute(query, (panier_id,))
         cart_items = cursor.fetchall()
-        # Calcul du sous-total
-        for item in cart_items:
-            subtotal += item["quantite"] * float(item["prix"])
+
+        # Utilisation de la fonction CalculerMontantTotalPanier pour le calcul du sous-total
+        cursor.execute("SELECT CalculerMontantTotalPanier(%s) AS subtotal", (panier_id,))
+        result = cursor.fetchone()
+        if result and result.get("subtotal") is not None:
+            subtotal = float(result["subtotal"])
+        else:
+            subtotal = 0.0
     
     cursor.close()
     conn.close()
     
-    # Pour l'exemple, on fixe des frais de livraison et on calcule la TVA à 20%
+    # Calcul des autres frais (exemple : livraison, TVA)
     shipping_cost = 4.99 if subtotal > 0 else 0.0
     tax = subtotal * 0.20
     total = subtotal + shipping_cost + tax
-    return render_template("panier.html", cart_items=cart_items, subtotal=subtotal, shipping_cost=shipping_cost, tax=tax, total=total)
+    
+    return render_template("panier.html", cart_items=cart_items,
+                           subtotal=subtotal,
+                           shipping_cost=shipping_cost,
+                           tax=tax,
+                           total=total)
+
+
+
+# procédure pour vider le panier
+@app.route('/vider-panier', methods=['POST'])
+def vider_panier():
+    if "user" not in session:
+        return jsonify({'success': False, 'message': 'Non connecté'}), 401
+    user_id = session["user"]["id_user"]
+
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    # Récupérer le panier actif de l'utilisateur
+    cursor.execute("SELECT * FROM Paniers WHERE id_user = %s AND statut = 'actif'", (user_id,))
+    panier = cursor.fetchone()
+    if panier:
+        panier_id = panier["id_panier"]
+        # Supprimer tous les articles du panier
+        cursor.execute("DELETE FROM Panier_Produits WHERE id_panier = %s", (panier_id,))
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+# procédure pour mettre à jour le panier : endpoint qui recevra pour chaque article l'id et la quantité au format JSON
+@app.route("/update-panier", methods=["POST"])
+def update_panier():
+    if "user" not in session:
+        return jsonify({'success': False, 'message': 'Non connecté'}), 401
+    user_id = session["user"]["id_user"]
+
+    data = request.get_json()
+    cart_updates = data.get('cart_updates')
+    if not cart_updates:
+        return jsonify({'success': False, 'message': 'Aucune donnée reçue'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    # Récupérer le panier actif de l'utilisateur
+    cursor.execute("SELECT * FROM Paniers WHERE id_user = %s AND statut = 'actif'", (user_id,))
+    panier = cursor.fetchone()
+    if panier:
+        panier_id = panier["id_panier"]
+        for update in cart_updates:
+            product_id = update.get("product_id")
+            try:
+                quantity = int(update.get("quantity", 1))
+            except ValueError:
+                quantity = 1
+            # Met à jour la quantité
+            cursor.execute(
+                "UPDATE Panier_Produits SET quantite = %s WHERE id_panier = %s AND id_produit = %s",
+                (quantity, panier_id, product_id)
+            )
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
+# procédure pour la suppression d'un article dans le panier
+@app.route("/remove-item", methods=["POST"])
+def remove_item():
+    if "user" not in session:
+        return jsonify({'success': False, 'message': 'Non connecté'}), 401
+    user_id = session["user"]["id_user"]
+    data = request.get_json()
+    product_id = data.get("product_id")
+    if not product_id:
+        return jsonify({'success': False, 'message': 'Produit manquant'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    # Récupérer le panier actif
+    cursor.execute("SELECT * FROM Paniers WHERE id_user = %s AND statut = 'actif'", (user_id,))
+    panier = cursor.fetchone()
+    if panier:
+        panier_id = panier["id_panier"]
+        cursor.execute("DELETE FROM Panier_Produits WHERE id_panier = %s AND id_produit = %s", (panier_id, product_id))
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+    return jsonify({'success': True})
+
 
 
 # -----------------------------------------------
@@ -406,6 +529,7 @@ def commande():
     user_id = session["user"]["id_user"]
     
     if request.method == "POST":
+        # Récupération des informations de livraison depuis le formulaire
         shipping_info = {
             "first_name": request.form.get("first-name"),
             "last_name": request.form.get("last-name"),
@@ -416,7 +540,7 @@ def commande():
             "postal_code": request.form.get("postal-code"),
             "city": request.form.get("city"),
             "country": request.form.get("country"),
-            "shipping_method": request.form.get("shipping-method"),
+            "shipping_method": request.form.get("shipping-method"),  # "standard", "express" ou "pickup"
             "order_notes": request.form.get("order-notes")
         }
         session["shipping_info"] = shipping_info
@@ -431,14 +555,12 @@ def commande():
             return redirect(url_for("panier"))
         panier_id = panier["id_panier"]
         
-        # Créer la commande en insérant une nouvelle ligne dans la table Commandes
+        # Créer la commande et insérer les informations de livraison
         cursor.execute("INSERT INTO Commandes (id_user, id_panier, date_commande, statut) VALUES (%s, %s, NOW(), 'en attente')", (user_id, panier_id))
         id_commande = cursor.lastrowid
         
-        # Mettre à jour le statut du panier pour marquer qu'il est validé
         cursor.execute("UPDATE Paniers SET statut = 'validé' WHERE id_panier = %s", (panier_id,))
         
-        # Insérer les informations de livraison dans la table Livraisons
         cursor.execute(
             "INSERT INTO Livraisons (id_commande, adresse, code_postal, ville, pays, telephone, mode_livraison) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             (id_commande, shipping_info["address"], shipping_info["postal_code"], shipping_info["city"], shipping_info["country"], shipping_info["phone"], shipping_info["shipping_method"])
@@ -447,7 +569,6 @@ def commande():
         cursor.close()
         conn.close()
         
-        # Stocker l'id de la commande dans la session pour la suite
         session["id_commande"] = id_commande
         return redirect(url_for("paiement"))
     
@@ -473,7 +594,19 @@ def commande():
     cursor.close()
     conn.close()
     
-    shipping_cost = 4.99 if subtotal > 0 else 0.0
+    # Détermination du mode de livraison
+    shipping_method = "standard"  # Par défaut
+    if session.get("shipping_info") and session["shipping_info"].get("shipping_method"):
+        shipping_method = session["shipping_info"]["shipping_method"]
+    
+    # Ajustement du coût de livraison selon le mode choisi
+    if shipping_method == "express":
+        shipping_cost = 9.99 if subtotal > 0 else 0.0
+    elif shipping_method == "pickup":
+        shipping_cost = 0.0
+    else:
+        shipping_cost = 4.99 if subtotal > 0 else 0.0
+    
     tax = subtotal * 0.20
     total = subtotal + shipping_cost + tax
     
@@ -483,6 +616,7 @@ def commande():
                            shipping_cost=shipping_cost,
                            tax=tax,
                            total=total)
+
 
 # Étape 2 : Paiement (paiement.html)
 @app.route("/paiement", methods=["GET", "POST"])
@@ -600,6 +734,46 @@ def suivi_commandes():
     conn.close()
     return render_template("suivi-commande.html", orders=orders)
 
+# endpoint pour annuler une commande non encore expédiée
+@app.route("/annuler_commande/<int:order_id>", methods=["POST"])
+def annuler_commande(order_id):
+    if "user" not in session:
+        flash("Vous devez être connecté.")
+        return redirect(url_for("connexion"))
+    
+    user_id = session["user"]["id_user"]
+    
+    # Vérifier que la commande appartient bien à l'utilisateur et qu'elle n'est pas déjà expédiée ou livrée
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM Commandes WHERE id_commande = %s AND id_user = %s", (order_id, user_id))
+    commande = cursor.fetchone()
+    if not commande:
+        cursor.close()
+        conn.close()
+        flash("Commande introuvable.")
+        return redirect(url_for("suivi_commandes"))
+    
+    if commande["statut"] in ["expédiée", "livrée"]:
+        cursor.close()
+        conn.close()
+        flash("Il n'est plus possible d'annuler une commande expédiée ou livrée.")
+        return redirect(url_for("suivi_commandes"))
+    
+    try:
+        # Appeler la procédure stockée qui annule la commande
+        cursor.execute("CALL AnnulerCommande(%s)", (order_id,))
+        conn.commit()
+        flash("Commande annulée avec succès.")
+    except Exception as e:
+        conn.rollback()
+        flash("Erreur lors de l'annulation de la commande : " + str(e))
+    finally:
+        cursor.close()
+        conn.close()
+        
+    return redirect(url_for("suivi_commandes"))
+
 
 # -----------------------------------------------
 # Route details-commandes
@@ -643,8 +817,12 @@ def details_commande(id_commande):
     return render_template("details-commande.html", order=order, items=items)
 
 
-
-
+#----------------------------------
+# Route page administrateur
+#-----------------------------------
+@app.route("/admin")
+def gestion_administrateur():
+    return render_template("admin-utilisateurs.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

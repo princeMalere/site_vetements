@@ -415,6 +415,31 @@ END //
 
 DELIMITER ;
 
+-- procédure pour automatisation du changement de statut d'une commande toutes les 24h
+
+DELIMITER //
+CREATE PROCEDURE UpdateCommandesStatus()
+BEGIN
+    -- Passage de "en attente" à "expédié" après 24 heures
+    UPDATE Commandes
+    SET statut = 'expédié'
+    WHERE statut = 'en attente'
+      AND date_commande <= DATE_SUB(NOW(), INTERVAL 1 DAY);
+
+    -- Passage de "expédié" à "livré" après 24 heures supplémentaires
+    UPDATE Commandes
+    SET statut = 'livré'
+    WHERE statut = 'expédié'
+      AND date_commande <= DATE_SUB(NOW(), INTERVAL 2 DAY);
+END //
+DELIMITER ;
+
+-- événement pour exécuter cette procédure toutes les 24h
+CREATE EVENT IF NOT EXISTS evt_update_commandes_status
+ON SCHEDULE EVERY 1 DAY
+STARTS CURRENT_TIMESTAMP
+DO
+    CALL UpdateCommandesStatus();
 
 
 -- ***********************************************************************************************************
@@ -452,15 +477,19 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE AnnulerCommande(IN p_id_commande INT)
 BEGIN
-    -- Mettre à jour le statut de la commande à 'annulée'
+    -- Mise à jour le statut de la commande à 'annulée'
     UPDATE Commandes
     SET statut = 'annulée'
     WHERE id_commande = p_id_commande;
 
-    -- (Optionnel) Mettre à jour le statut du panier associé
+    -- Mise à jour le statut du panier associé
     UPDATE Paniers
     SET statut = 'annulé'
     WHERE id_panier = (SELECT id_panier FROM Commandes WHERE id_commande = p_id_commande);
+
+    -- Mise à jour du statut du paiement associé
+    --UPDATE Paiements SET statut = 'annulé' WHERE id_commande = p_id_commande;
+
 END //
 DELIMITER ;
 
@@ -533,7 +562,7 @@ DELIMITER ;
 ---------------------------------------------------------------------
 -- Triggers
 ---------------------------------------------------------------------
--- Trigger permettant de décrémenter le stock d'un produit dès qu'un article est ajouté à une commande
+-- Trigger permettant de décrémenter le stock d'un produit dès qu'un article est ajouté à un panier
 DELIMITER //
 CREATE TRIGGER decremente_stock_apres_ajout_commande
 AFTER INSERT ON Panier_Produits
