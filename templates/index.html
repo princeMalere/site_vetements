@@ -50,7 +50,7 @@
       <div class="container">
         <h2 class="text-center mb-4">Catégories Populaires</h2>
         <div class="row g-4">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <div class="card category-card">
               <img
                 src="https://picsum.photos/id/1005/400/300"
@@ -60,14 +60,14 @@
               <div class="card-body text-center">
                 <h5 class="card-title">Hommes</h5>
                 <a
-                  href="produits.html?categorie=hommes"
+                  href="{{ url_for('produits', genre='Homme') }}"
                   class="btn btn-outline-dark"
                   >Découvrir</a
                 >
               </div>
             </div>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-4">
             <div class="card category-card">
               <img
                 src="https://picsum.photos/id/1011/400/300"
@@ -76,11 +76,23 @@
               />
               <div class="card-body text-center">
                 <h5 class="card-title">Femmes</h5>
-                <a
-                  href="{{url_for('produits')}}"
-                  class="btn btn-outline-dark"
-                  >Découvrir</a
-                >
+                <a href="{{ url_for('produits', genre='Femme') }}" class="btn btn-outline-dark">Découvrir</a>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="card category-card">
+              <img
+                src="https://picsum.photos/id/1011/400/300"
+                class="card-img-top"
+                alt="Femmes"
+              />
+              <div class="card-body text-center">
+                <h5 class="card-title">Unisexe</h5>
+                <a href="{{ url_for('produits', genre='Unisexe') }}" class="btn btn-outline-dark">Découvrir</a>
+
               </div>
             </div>
           </div>
@@ -99,7 +111,7 @@
                 <img src="{{ produit.image_url }}" class="card-img-top" alt="{{ produit.nom }}">
                 <div class="card-body">
                   <h5 class="card-title">{{ produit.nom }}</h5>
-                  <p class="card-text">{{ produit.prix }} €</p>
+                  <p class="card-text">${{ produit.prix }}</p>
                   <a href="{{ url_for('produit_detail', produit_id=produit.id_produit) }}" class="btn btn-primary">Voir le produit</a>
                 </div>
               </div>

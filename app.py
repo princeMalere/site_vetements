@@ -8,11 +8,12 @@ app = Flask(__name__)
 app.secret_key = 'cle_secrete'  # Remplacez par une clé secrète forte
 bcrypt = Bcrypt(app)
 
+# fonction pour faciliter la récupération de la connnexion à la base de données
 def get_db_connection():
     conn = pymysql.connect(
         host='localhost',
         user='root',
-        password='********',  # Remplacez par votre mot de passe
+        password='******',  # A remplacer par le mot de passe de votre base de données
         db='ecommerce_db',
         charset='utf8mb4'
     )
@@ -24,67 +25,56 @@ def get_db_connection():
 @app.route("/")
 def index():
     conn = get_db_connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    # Sélectionner par exemple les 4 derniers produits ajoutés à afficher en vedette
+    cursor = conn.cursor(pymysql.cursors.DictCursor) 
+    # Ici on sélectionne par exemple les 4 derniers produits ajoutés pour les afficher en vedette
     cursor.execute("SELECT * FROM Produits ORDER BY date_ajout DESC LIMIT 4")
     featured_products = cursor.fetchall()
     cursor.close()
     conn.close()
-    # La template index.html pourra itérer sur 'featured_products'
+    # La page index.html pourra ainsi itérer sur les produits en vedette récupérés 'featured_products'
     return render_template("index.html", featured_products=featured_products)
 
-# -----------------------
-# 2. Page Catalogue (produits.html)
-# -----------------------
+# --------------------------------------------------------------------------
+# 2. Fonctionnalités pour la Page du Catalogue des produits (produits.html)
+# --------------------------------------------------------------------------
 @app.route("/produits")
 def produits():
-    # Récupération des paramètres de filtre et de pagination s'il y a lieu
-    categorie = request.args.get("categorie")
-    search = request.args.get("search")
+    # Récupération des filtres envoyés par GET
+    genre = request.args.get("genre")            # Pour filtrer sur le genre
+    search = request.args.get("search")            # Pour le champ de recherche
+    price_max = request.args.get("price_max")      # Pour filtrer sur le prix maximum
+    taille = request.args.get("taille")            # Pour filtrer sur une taille donnée
+    couleur = request.args.get("couleur")          # Pour filtrer sur une couleur donnée
+    sort_by = request.args.get("sort_by", "newest")  # Critère de tri avec "newest" par défaut
+
     page = request.args.get("page", 1, type=int)
-    per_page = 12  # nombre de produits par page
+    per_page = 12
     offset = (page - 1) * per_page
 
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     
-    # Construction de la requête de sélection dynamique
-    query = "SELECT * FROM Produits WHERE 1=1"
-    params = []
-    if categorie:
-        query += " AND LOWER(categorie) = LOWER(%s)"
-        params.append(categorie)
-    if search:
-        query += " AND (nom LIKE %s OR description LIKE %s)"
-        params.append('%' + search + '%')
-        params.append('%' + search + '%')
-    query += " LIMIT %s OFFSET %s"
-    params.append(per_page)
-    params.append(offset)
-    
-    cursor.execute(query, tuple(params))
+    # Appel de la procédure pour récupérer les produits filtrés, paginés et triés
+    cursor.callproc("RecupererProduitsFiltres", (genre, search, price_max, taille, couleur, per_page, offset, sort_by))
     products = cursor.fetchall()
-
-    # Calcul du total pour la pagination
-    count_query = "SELECT COUNT(*) as total FROM Produits WHERE 1=1"
-    count_params = []
-    if categorie:
-        count_query += " AND LOWER(categorie) = LOWER(%s)"
-        count_params.append(categorie)
-    if search:
-        count_query += " AND (nom LIKE %s OR description LIKE %s)"
-        count_params.append('%' + search + '%')
-        count_params.append('%' + search + '%')
-    cursor.execute(count_query, tuple(count_params))
+    
+    # Récupération du nombre total de produits filtrés pour la pagination
+    cursor.close()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.callproc("CompterProduitsFiltres", (genre, search, price_max, taille, couleur))
     total = cursor.fetchone()['total']
-
+    
     cursor.close()
     conn.close()
-
+    
     return render_template("produits.html", products=products, total=total, page=page, per_page=per_page)
 
 
+
+
+
 # on récupère le produit sélectionné et les avis liés à ce produit
+@app.route("/produit/<int:produit_id>")
 @app.route("/produit/<int:produit_id>")
 def produit_detail(produit_id):
     conn = get_db_connection()
@@ -98,22 +88,108 @@ def produit_detail(produit_id):
         conn.close()
         abort(404)
     
-    # Utilisation de la fonction SQL CalculerMoyenneNotes pour obtenir la note moyenne
+    # Récupération de la note moyenne via la fonction SQL
     cursor.execute("SELECT CalculerMoyenneNotes(%s) AS note_moyenne", (produit_id,))
     result = cursor.fetchone()
-    if result and result.get("note_moyenne") is not None:
-        product["note_moyenne"] = result["note_moyenne"]
-    else:
-        product["note_moyenne"] = 0
+    product["note_moyenne"] = result["note_moyenne"] if result and result.get("note_moyenne") is not None else 0
 
-    # Récupération des avis pour ce produit
-    cursor.execute("SELECT * FROM Avis WHERE id_produit = %s ORDER BY date_avis DESC", (produit_id,))
+    # Récupération des avis avec jointure sur Utilisateurs pour avoir prenom et nom
+    cursor.execute("""
+      SELECT Avis.*, Utilisateurs.prenom, Utilisateurs.nom 
+      FROM Avis 
+      JOIN Utilisateurs ON Avis.id_user = Utilisateurs.id_user 
+      WHERE Avis.id_produit = %s 
+      ORDER BY date_avis DESC
+    """, (produit_id,))
     reviews = cursor.fetchall()
-    
     cursor.close()
     conn.close()
     
-    return render_template("detail-produit.html", product=product, reviews=reviews)
+    # Calcul de my_review dans le code Python (en dehors du template)
+    my_review = None
+    if session.get('user'):
+        for review in reviews:
+            # Il est important que les types soient identiques (si besoin, convertissez en int)
+            if review['id_user'] == session.get('user')['id_user']:
+                my_review = review
+                break
+
+    return render_template("detail-produit.html", product=product, reviews=reviews, my_review=my_review)
+
+
+
+
+# fonctionnalité pour l'ajout d'un avis
+@app.route("/ajouter-avis/<int:produit_id>", methods=["POST"])
+def ajouter_avis(produit_id):
+    if "user" not in session:
+        flash("Veuillez vous connecter pour laisser un avis.")
+        return redirect(url_for("connexion"))
+
+    # Récupération des données du formulaire
+    avis_text = request.form.get("avis")
+    note = request.form.get("note")
+    user_id = session["user"]["id_user"]
+
+    # Connexion et insertion dans la table Avis (selon la structure de la table)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Modification effectuée : utilisation de "commentaire" et "id_user"
+        query = "INSERT INTO Avis (id_produit, id_user, note, commentaire, date_avis) VALUES (%s, %s, %s, %s, NOW())"
+        cursor.execute(query, (produit_id, user_id, note, avis_text))
+        conn.commit()
+        flash("Votre avis a été ajouté avec succès !")
+    except Exception as e:
+        conn.rollback()
+        flash("Erreur lors de l'ajout de l'avis : " + str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+    # Redirection vers la page de détail du produit après l'ajout de l'avis
+    return redirect(url_for("produit_detail", produit_id=produit_id))
+
+# Endpoint pour modifier un avis existant
+@app.route("/modifier-avis/<int:produit_id>", methods=["GET", "POST"])
+def modifier_avis(produit_id):
+    if "user" not in session:
+        flash("Veuillez vous connecter pour modifier votre avis.")
+        return redirect(url_for("connexion"))
+    
+    user_id = session["user"]["id_user"]
+    
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    # Récupération de l'avis existant de l'utilisateur pour ce produit
+    cursor.execute("SELECT * FROM Avis WHERE id_produit = %s AND id_user = %s", (produit_id, user_id))
+    review = cursor.fetchone()
+    if not review:
+        flash("Aucun avis trouvé à modifier.")
+        cursor.close()
+        conn.close()
+        return redirect(url_for("produit_detail", produit_id=produit_id))
+    
+    if request.method == "POST":
+        new_avis_text = request.form.get("avis")
+        new_note = request.form.get("note")
+        try:
+            query = "UPDATE Avis SET commentaire = %s, note = %s, date_avis = NOW() WHERE id_avis = %s"
+            cursor.execute(query, (new_avis_text, new_note, review["id_avis"]))
+            conn.commit()
+            flash("Votre avis a été modifié avec succès.")
+        except Exception as e:
+            conn.rollback()
+            flash("Erreur lors de la modification de l'avis : " + str(e))
+        finally:
+            cursor.close()
+            conn.close()
+        return redirect(url_for("produit_detail", produit_id=produit_id))
+    
+    cursor.close()
+    conn.close()
+    # Affichage du formulaire de modification pré-rempli avec les données existantes
+    return render_template("modifier-avis.html", produit_id=produit_id, review=review)
 
 
 # -----------------------------------------------
@@ -207,6 +283,16 @@ def connexion():
             return redirect(url_for("connexion"))
             
     return render_template("connexion.html")
+
+# -----------------------------------------------
+# Route de déconnexion
+# -----------------------------------------------
+
+@app.route("/deconnexion")
+def deconnexion():
+    session.pop("user", None)
+    flash("Vous êtes maintenant déconnecté.")
+    return redirect(url_for("index"))
 
 # -----------------------------------------------
 # Route panier

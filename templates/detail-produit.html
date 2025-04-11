@@ -32,7 +32,7 @@
           <div class="col-md-6">
             <div class="product-images">
               <img id="main-product-image" src="{{ product.image_url }}" alt="{{ product.nom }}" class="img-fluid mb-3 rounded" />
-              <!-- Miniatures éventuelles (statique ou non) peuvent rester ici -->
+              <!-- Miniatures éventuelles peuvent rester ici -->
             </div>
           </div>
           <!-- Informations essentielles -->
@@ -55,7 +55,6 @@
                 </div>
               </div>
               <div class="mb-3">
-                <!-- Prix affiché en dollars -->
                 <h3 id="product-price" class="fw-bold">${{ product.prix }}</h3>
               </div>
               <p id="product-description" class="mb-4">{{ product.description }}</p>
@@ -89,7 +88,7 @@
                   Description
                 </button>
               </li>
-              <!-- Onglet Spécifications : affichage simplifié avec les infos issues du produit -->
+              <!-- Onglet Spécifications -->
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab" aria-controls="specifications" aria-selected="false">
                   Spécifications
@@ -108,7 +107,7 @@
                 <h4>Description détaillée</h4>
                 <p>{{ product.description }}</p>
               </div>
-              <!-- Contenu de l'onglet Spécifications (affiche les infos disponibles dans la table Produits) -->
+              <!-- Contenu de l'onglet Spécifications -->
               <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
                 <h4>Spécifications</h4>
                 <table class="table table-bordered">
@@ -136,7 +135,13 @@
               <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                   <h4>Avis des clients</h4>
-                  <button class="btn btn-outline-primary" id="write-review-btn">Écrire un avis</button>
+                  {% if session.get('user') %}
+                    {% if my_review %}
+                      <a href="{{ url_for('modifier_avis', produit_id=product.id_produit) }}" class="btn btn-outline-primary">Modifier mon avis</a>
+                    {% else %}
+                      <button class="btn btn-outline-primary" id="write-review-btn">Écrire un avis</button>
+                    {% endif %}
+                  {% endif %}
                 </div>
                 <div id="review-list">
                   {% if reviews %}
@@ -145,7 +150,7 @@
                         <div class="card-body">
                           <div class="d-flex justify-content-between">
                             <div>
-                              <strong>{{ review.nom_auteur if review.nom_auteur is defined else "Anonyme" }}</strong>
+                              <strong>{{ review.prenom }} {{ review.nom }}</strong>
                               <div class="text-warning">
                                 {% for i in range(1, 6) %}
                                   {% if i <= review.note %}
@@ -166,6 +171,33 @@
                     <p>Aucun avis pour ce produit.</p>
                   {% endif %}
                 </div>
+                <!-- Affichage du formulaire d'avis uniquement si l'utilisateur est connecté et n'a pas laissé d'avis -->
+                {% if session.get('user') and not my_review %}
+                <div id="review-form-container" class="mt-5">
+                  <h4>Ajouter votre avis</h4>
+                  <form action="{{ url_for('ajouter_avis', produit_id=product.id_produit) }}" method="post">
+                    <div class="mb-3">
+                      <label for="avis" class="form-label">Votre avis</label>
+                      <textarea id="avis" name="avis" class="form-control" rows="4" placeholder="Écrivez votre avis ici..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label for="note" class="form-label">Votre note</label>
+                      <select id="note" name="note" class="form-select">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                      </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Envoyer l'avis</button>
+                  </form>
+                </div>
+                {% elif session.get('user') and my_review %}
+                  <p class="mt-4">Vous avez déjà laissé un avis. Vous pouvez le modifier en cliquant sur "Modifier mon avis".</p>
+                {% else %}
+                  <p class="mt-4">Pour laisser un avis, veuillez vous <a href="{{ url_for('connexion') }}">connecter</a>.</p>
+                {% endif %}
               </div>
             </div>
           </div>

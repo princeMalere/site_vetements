@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier mon avis - StyleShop</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='responsive.css') }}">
+  </head>
+  <body>
+    {% include "header.html" %}
+    <div class="container py-4">
+      <h1 class="mb-4">Modifier mon avis</h1>
+      <form action="{{ url_for('modifier_avis', produit_id=produit_id) }}" method="post">
+        <div class="mb-3">
+          <label for="avis" class="form-label">Votre avis</label>
+          <textarea id="avis" name="avis" class="form-control" rows="4" placeholder="Écrivez votre avis ici...">{{ review.commentaire }}</textarea>
+        </div>
+        <div class="mb-3">
+          <label for="note" class="form-label">Votre note</label>
+          <select id="note" name="note" class="form-select">
+            <option value="1" {% if review.note == 1 %}selected{% endif %}>1</option>
+            <option value="2" {% if review.note == 2 %}selected{% endif %}>2</option>
+            <option value="3" {% if review.note == 3 %}selected{% endif %}>3</option>
+            <option value="4" {% if review.note == 4 %}selected{% endif %}>4</option>
+            <option value="5" {% if review.note == 5 %}selected{% endif %}>5</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Modifier mon avis</button>
+      </form>
+    </div>
+    {% include "footer.html" %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

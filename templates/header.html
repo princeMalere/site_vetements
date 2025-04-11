@@ -18,13 +18,18 @@
             </li>
           </ul>
           <div class="d-flex">
-            <a href="{{url_for('panier')}}" class="btn btn-outline-dark me-2">
+            <a href="{{ url_for('panier') }}" class="btn btn-outline-dark me-2">
               <i class="bi bi-cart"></i> Panier
               <span id="cart-count" class="badge bg-dark text-white ms-1 rounded-pill">0</span>
             </a>
-            <a href="{{ url_for('connexion') }}" class="btn btn-outline-dark me-2">Connexion</a>
-            <a href="{{ url_for('inscription') }}" class="btn btn-dark">Inscription</a>
+            {% if session.get('user') %}
+              <a href="{{ url_for('deconnexion') }}" class="btn btn-outline-dark me-2">Déconnexion</a>
+            {% else %}
+              <a href="{{ url_for('connexion') }}" class="btn btn-outline-dark me-2">Connexion</a>
+              <a href="{{ url_for('inscription') }}" class="btn btn-dark">Inscription</a>
+            {% endif %}
           </div>
+          
         </div>
       </div>
     </nav>

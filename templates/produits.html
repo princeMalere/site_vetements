@@ -37,8 +37,10 @@
                     <input
                       type="text"
                       id="search"
+                      name="search"
                       class="form-control"
                       placeholder="Rechercher..."
+                      value="{{ request.args.get('search', '') }}"
                     />
                     <button class="btn btn-dark" id="search-btn">
                       <i class="bi bi-search"></i>
@@ -46,41 +48,47 @@
                   </div>
                 </div>
 
-                <!-- Catégories -->
+                <!-- Genre -->
                 <div class="mb-3">
-                  <label class="form-label">Catégories</label>
+                  <label class="form-label">Genre</label>
                   <div class="form-check">
                     <input
                       class="form-check-input"
                       type="checkbox"
-                      value="hommes"
-                      id="cat-hommes"
+                      name="genre"
+                      value="Homme"
+                      id="cat-homme"
+                      {% if request.args.get('genre') == 'Homme' %}checked{% endif %}
                     />
-                    <label class="form-check-label" for="cat-hommes"
-                      >Hommes</label
-                    >
+                    <label class="form-check-label" for="cat-homme">
+                      Homme
+                    </label>
                   </div>
                   <div class="form-check">
                     <input
                       class="form-check-input"
                       type="checkbox"
-                      value="femmes"
-                      id="cat-femmes"
+                      name="genre"
+                      value="Femme"
+                      id="cat-femme"
+                      {% if request.args.get('genre') == 'Femme' %}checked{% endif %}
                     />
-                    <label class="form-check-label" for="cat-femmes"
-                      >Femmes</label
-                    >
+                    <label class="form-check-label" for="cat-femme">
+                      Femme
+                    </label>
                   </div>
                   <div class="form-check">
                     <input
                       class="form-check-input"
                       type="checkbox"
-                      value="accessoires"
-                      id="cat-accessoires"
+                      name="genre"
+                      value="Unisexe"
+                      id="cat-unisexe"
+                      {% if request.args.get('genre') == 'Unisexe' %}checked{% endif %}
                     />
-                    <label class="form-check-label" for="cat-accessoires"
-                      >Accessoires</label
-                    >
+                    <label class="form-check-label" for="cat-unisexe">
+                      Unisexe
+                    </label>
                   </div>
                 </div>
 
@@ -92,66 +100,51 @@
                       type="checkbox"
                       class="btn-check"
                       id="taille-xs"
+                      name="taille"
                       autocomplete="off"
                       value="XS"
                     />
-                    <label
-                      class="btn btn-outline-dark btn-sm m-1"
-                      for="taille-xs"
-                      >XS</label
-                    >
+                    <label class="btn btn-outline-dark btn-sm m-1" for="taille-xs">XS</label>
 
                     <input
                       type="checkbox"
                       class="btn-check"
                       id="taille-s"
+                      name="taille"
                       autocomplete="off"
                       value="S"
                     />
-                    <label
-                      class="btn btn-outline-dark btn-sm m-1"
-                      for="taille-s"
-                      >S</label
-                    >
+                    <label class="btn btn-outline-dark btn-sm m-1" for="taille-s">S</label>
 
                     <input
                       type="checkbox"
                       class="btn-check"
                       id="taille-m"
+                      name="taille"
                       autocomplete="off"
                       value="M"
                     />
-                    <label
-                      class="btn btn-outline-dark btn-sm m-1"
-                      for="taille-m"
-                      >M</label
-                    >
+                    <label class="btn btn-outline-dark btn-sm m-1" for="taille-m">M</label>
 
                     <input
                       type="checkbox"
                       class="btn-check"
                       id="taille-l"
+                      name="taille"
                       autocomplete="off"
                       value="L"
                     />
-                    <label
-                      class="btn btn-outline-dark btn-sm m-1"
-                      for="taille-l"
-                      >L</label
-                    >
+                    <label class="btn btn-outline-dark btn-sm m-1" for="taille-l">L</label>
 
                     <input
                       type="checkbox"
                       class="btn-check"
                       id="taille-xl"
+                      name="taille"
                       autocomplete="off"
                       value="XL"
                     />
-                    <label
-                      class="btn btn-outline-dark btn-sm m-1"
-                      for="taille-xl"
-                      >XL</label
-                    >
+                    <label class="btn btn-outline-dark btn-sm m-1" for="taille-xl">XL</label>
                   </div>
                 </div>
 
@@ -163,6 +156,7 @@
                       type="checkbox"
                       class="btn-check"
                       id="couleur-noir"
+                      name="couleur"
                       autocomplete="off"
                       value="noir"
                     />
@@ -176,24 +170,21 @@
                       type="checkbox"
                       class="btn-check"
                       id="couleur-blanc"
+                      name="couleur"
                       autocomplete="off"
                       value="blanc"
                     />
                     <label
                       class="btn btn-sm m-1 color-btn"
                       for="couleur-blanc"
-                      style="
-                        background-color: white;
-                        border: 1px solid #ddd;
-                        width: 30px;
-                        height: 30px;
-                      "
+                      style="background-color: white; border: 1px solid #ddd; width: 30px; height: 30px"
                     ></label>
 
                     <input
                       type="checkbox"
                       class="btn-check"
                       id="couleur-rouge"
+                      name="couleur"
                       autocomplete="off"
                       value="rouge"
                     />
@@ -207,6 +198,7 @@
                       type="checkbox"
                       class="btn-check"
                       id="couleur-bleu"
+                      name="couleur"
                       autocomplete="off"
                       value="bleu"
                     />
@@ -220,6 +212,7 @@
                       type="checkbox"
                       class="btn-check"
                       id="couleur-vert"
+                      name="couleur"
                       autocomplete="off"
                       value="vert"
                     />
@@ -233,17 +226,18 @@
 
                 <!-- Prix -->
                 <div class="mb-3">
-                  <label for="price-range" class="form-label"
-                    >Prix max: <span id="price-value">100</span> €</label
-                  >
+                  <label for="price-range" class="form-label">
+                    Prix max: $<span id="price-value">{{ request.args.get('price_max', '100') }}</span> 
+                  </label>
                   <input
                     type="range"
                     class="form-range"
                     id="price-range"
+                    name="price_max"
                     min="0"
-                    max="200"
+                    max="1000"
                     step="10"
-                    value="100"
+                    value="{{ request.args.get('price_max', '100') }}"
                   />
                 </div>
 
@@ -264,67 +258,69 @@
           <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <div>
-                <span id="products-count" class="text-muted"
-                  >0 produits trouvés</span
-                >
+                <span id="products-count" class="text-muted">
+                  {{ total }} produits trouvés
+                </span>
               </div>
               <div class="d-flex align-items-center">
                 <label for="sort-by" class="me-2">Trier par:</label>
-                <select
-                  id="sort-by"
-                  class="form-select form-select-sm"
-                  style="width: auto"
-                >
-                  <option value="popularity">Popularité</option>
-                  <option value="price-asc">Prix: croissant</option>
-                  <option value="price-desc">Prix: décroissant</option>
-                  <option value="newest">Nouveautés</option>
+                <select id="sort-by" class="form-select form-select-sm" style="width: auto">
+                  <option value="popularity" {% if request.args.get('sort_by')=='popularity' %}selected{% endif %}>Popularité</option>
+                  <option value="price-asc" {% if request.args.get('sort_by')=='price-asc' %}selected{% endif %}>Prix: croissant</option>
+                  <option value="price-desc" {% if request.args.get('sort_by')=='price-desc' %}selected{% endif %}>Prix: décroissant</option>
+                  <option value="newest" {% if request.args.get('sort_by')=='newest' or not request.args.get('sort_by') %}selected{% endif %}>Nouveautés</option>
                 </select>
               </div>
+
+
+              <!-- <div class="d-flex align-items-center">
+                <label for="sort-by" class="me-2">Trier par:</label>
+                <select id="sort-by" class="form-select form-select-sm" style="width: auto">
+                  <option value="popularity" {% if request.args.get('sort_by')=='popularity' %}selected{% endif %}>Popularité</option>
+                  <option value="price-asc" {% if request.args.get('sort_by')=='price-asc' %}selected{% endif %}>Prix: croissant</option>
+                  <option value="price-desc" {% if request.args.get('sort_by')=='price-desc' %}selected{% endif %}>Prix: décroissant</option>
+                  <option value="newest" {% if request.args.get('sort_by')=='newest' or not request.args.get('sort_by') %}selected{% endif %}>Nouveautés</option>
+                </select>
+              </div> -->
             </div>
 
-        <!-- Grille de produits -->
-        <div class="row g-4" id="products-grid">
-          {% if products %}
-            {% for produit in products %}
-              <div class="col-md-4">
-                <div class="card h-100">
-                  <img src="{{ produit.image_url }}" class="card-img-top" alt="{{ produit.nom }}">
-                  <div class="card-body">
-                    <h5 class="card-title">{{ produit.nom }}</h5>
-                    <p class="card-text">{{ produit.description }}</p>
+            <!-- Grille de produits -->
+            <div class="row g-4" id="products-grid">
+              {% if products %}
+                {% for produit in products %}
+                  <div class="col-md-4">
+                    <div class="card h-100">
+                      <img src="{{ produit.image_url }}" class="card-img-top" alt="{{ produit.nom }}">
+                      <div class="card-body">
+                        <h5 class="card-title">{{ produit.nom }}</h5>
+                        <p class="card-text">{{ produit.description }}</p>
+                      </div>
+                      <div class="card-footer">
+                        <p class="text-muted">${{ produit.prix }}</p>
+                        <a href="{{ url_for('produit_detail', produit_id=produit.id_produit) }}" class="btn btn-primary">Voir le produit</a>
+                      </div>
+                    </div>
                   </div>
-                  <div class="card-footer">
-                    <p class="text-muted">{{ produit.prix }} €</p>
-                    <a href="{{ url_for('produit_detail', produit_id=produit.id_produit) }}" class="btn btn-primary">Voir le produit</a>
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p>Aucun produit trouvé.</p>
-          {% endif %}
-        </div>
+                {% endfor %}
+              {% else %}
+                <p>Aucun produit trouvé.</p>
+              {% endif %}
+            </div>
 
             <!-- Pagination -->
             <nav class="my-4">
               <ul class="pagination justify-content-center" id="pagination">
-                <li class="page-item disabled">
-                  <a
-                    class="page-link"
-                    href="#"
-                    tabindex="-1"
-                    aria-disabled="true"
-                    >Précédent</a
-                  >
+                {%- set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) -%}
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                  <a class="page-link" href="{{ url_for('produits', page=page-1, search=request.args.get('search'), genre=request.args.get('genre'), price_max=request.args.get('price_max'), taille=request.args.get('taille'), couleur=request.args.get('couleur')) }}">Précédent</a>
                 </li>
-                <li class="page-item active">
-                  <a class="page-link" href="#">1</a>
-                </li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                <li class="page-item">
-                  <a class="page-link" href="#">Suivant</a>
+                {% for p in range(1, total_pages+1) %}
+                  <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('produits', page=p, search=request.args.get('search'), genre=request.args.get('genre'), price_max=request.args.get('price_max'), taille=request.args.get('taille'), couleur=request.args.get('couleur')) }}">{{ p }}</a>
+                  </li>
+                {% endfor %}
+                <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                  <a class="page-link" href="{{ url_for('produits', page=page+1, search=request.args.get('search'), genre=request.args.get('genre'), price_max=request.args.get('price_max'), taille=request.args.get('taille'), couleur=request.args.get('couleur')) }}">Suivant</a>
                 </li>
               </ul>
             </nav>
@@ -334,18 +330,16 @@
     </section>
 
     <!-- Zone de notification -->
-    <div
-      id="notification-container"
-      class="position-fixed bottom-0 end-0 p-3"
-    ></div>
+    <div id="notification-container" class="position-fixed bottom-0 end-0 p-3"></div>
 
     <!-- Footer -->
     {% include "footer.html" %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Vos scripts personnalisés -->
     <script src="../js/main.js"></script>
-    <script src="../js/produits.js"></script>
+    <script src="../static/produits.js"></script>
     <script src="../js/notifications.js"></script>
   </body>
 </html>

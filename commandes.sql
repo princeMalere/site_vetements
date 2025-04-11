@@ -354,6 +354,71 @@ ORDER BY cm.id_commande;
 ---------------------------------------------------------------------
 -- Procédures et fonctions
 ---------------------------------------------------------------------
+
+-- Procédure pour récupérer les produits filtrés, paginés et triés
+DELIMITER //
+
+CREATE PROCEDURE RecupererProduitsFiltres(
+    IN p_genre VARCHAR(100),          -- permet de filtrer sur un genre spécifique, si il existe
+    IN p_search VARCHAR(255),         -- ce paramètre permettra, s'il existe, la recherche par mot clé suivant le nom ou la description du produit
+    IN p_price_max DECIMAL(10,2),      -- permet de filtrer sur le prix maximum
+    IN p_taille VARCHAR(10),           -- permet de filtrer sur une taille spécifique, si elle existe
+    IN p_couleur VARCHAR(50),          -- permet de filtrer sur une couleur spécifique, si elle existe
+    IN p_limit INT,                    -- limitera le nombre de résultats par page
+    IN p_offset INT,                   -- le décalage dans le résultat obtenu
+    IN p_sort_by VARCHAR(20)           -- critère de tri : 'price-asc', 'price-desc', 'popularity', 'newest'
+)
+BEGIN
+    SELECT *
+    FROM Produits
+    WHERE
+      (p_genre IS NULL OR LOWER(genre) = LOWER(p_genre))
+      AND (p_search IS NULL OR (nom LIKE CONCAT('%', p_search, '%') OR description LIKE CONCAT('%', p_search, '%')))
+      AND (p_price_max IS NULL OR prix <= p_price_max)
+      AND (p_taille IS NULL OR taille = p_taille)
+      AND (p_couleur IS NULL OR couleur = p_couleur)
+    ORDER BY
+      -- Si le tri demandé est 'price-asc', on trie par prix ASC ; sinon, on ne tient pas compte de cette expression
+      IF(p_sort_by = 'price-asc', prix, 0) ASC,
+      -- Si le tri demandé est 'price-desc', on trie par prix DESC ; sinon, on ne tient pas compte de cette expression
+      IF(p_sort_by = 'price-desc', prix, 0) DESC,
+      -- Dans tous les cas (pour 'newest' ou 'popularity' ou autre), on trie par date d'ajout décroissant
+      date_ajout DESC
+    LIMIT p_limit OFFSET p_offset;
+END //
+
+DELIMITER ;
+
+
+
+
+-- Procédure pour compter les nombres de produits correspondant au filtre appliqué
+DELIMITER //
+
+CREATE PROCEDURE CompterProduitsFiltres(
+    IN p_genre VARCHAR(100), -- permet de filter sur un genre spécifique, si il existe
+    IN p_search VARCHAR(255), -- ce paramètre permettra, s'il existe, la recherche par mot clé suivant le nom ou la description du produit
+    IN p_price_max DECIMAL(10,2), -- permet de filter sur le prix maximum
+    IN p_taille VARCHAR(10), -- permet de filter sur une taille spécifique, si elle existe
+    IN p_couleur VARCHAR(50)  -- permet de filter sur une couleur spécifique, si elle existe
+)
+BEGIN
+    SELECT COUNT(*) AS total
+    FROM Produits
+    WHERE
+      (p_genre IS NULL OR LOWER(genre) = LOWER(p_genre))
+      AND (p_search IS NULL OR (nom LIKE CONCAT('%', p_search, '%') OR description LIKE CONCAT('%', p_search, '%')))
+      AND (p_price_max IS NULL OR prix <= p_price_max)
+      AND (p_taille IS NULL OR taille = p_taille)
+      AND (p_couleur IS NULL OR couleur = p_couleur);
+END //
+
+DELIMITER ;
+
+
+
+-- ***********************************************************************************************************
+
 -- Procédure pour la conversion d'un panier en commande
 DELIMITER //
 CREATE PROCEDURE ConvertirPanierEnCommande(IN p_id_panier INT)
