@@ -1,6 +1,9 @@
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+SET collation_connection = utf8mb4_unicode_ci;
+
 DROP DATABASE IF EXISTS ecommerce_db;
-CREATE DATABASE ecommerce_db;
-USE ecommerce_db;
+CREATE DATABASE ecommerce_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE Utilisateurs (
     id_user INT AUTO_INCREMENT PRIMARY KEY,
@@ -572,6 +575,58 @@ BEGIN
     SET stock = stock - NEW.quantite
     WHERE id_produit = NEW.id_produit;
 END //
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER ajuste_stock_apres_update_panier
+BEFORE UPDATE ON Panier_Produits
+FOR EACH ROW
+BEGIN
+    DECLARE v_stock INT;
+
+    IF NEW.quantite <> OLD.quantite THEN
+        IF NEW.quantite < OLD.quantite THEN
+            UPDATE Produits
+            SET stock = stock + (OLD.quantite - NEW.quantite)
+            WHERE id_produit = NEW.id_produit;
+        ELSE
+            SELECT stock INTO v_stock
+            FROM Produits
+            WHERE id_produit = NEW.id_produit;
+            
+            IF v_stock < (NEW.quantite - OLD.quantite) THEN
+                SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT = 'Stock insuffisant pour cet update';
+            END IF;
+            
+            UPDATE Produits
+            SET stock = stock - (NEW.quantite - OLD.quantite)
+            WHERE id_produit = NEW.id_produit;
+        END IF;
+    END IF;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER verif_stock_avant_ajout_commande
+BEFORE INSERT ON Panier_Produits
+FOR EACH ROW
+BEGIN
+    DECLARE v_stock INT;
+
+    SELECT stock INTO v_stock
+    FROM Produits
+    WHERE id_produit = NEW.id_produit;
+    
+    IF v_stock < NEW.quantite THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Stock insuffisant pour ce produit';
+    END IF;
+END //
+
 DELIMITER ;
 
 -- Trigger empêchant l'ajout d'un produit dont le stock est insuffisant
